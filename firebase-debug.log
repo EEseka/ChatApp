@@ -1,0 +1,442 @@
+[debug] [2024-12-01T16:21:02.871Z] ----------------------------------------------------------------------
+[debug] [2024-12-01T16:21:02.878Z] Command:       /usr/local/bin/firebase /home/eseka/.cache/firebase/tools/lib/node_modules/firebase-tools/lib/bin/firebase emulators:start
+[debug] [2024-12-01T16:21:02.879Z] CLI Version:   13.27.0
+[debug] [2024-12-01T16:21:02.879Z] Platform:      linux
+[debug] [2024-12-01T16:21:02.881Z] Node Version:  v18.5.0
+[debug] [2024-12-01T16:21:02.883Z] Time:          Sun Dec 01 2024 17:21:02 GMT+0100 (West Africa Standard Time)
+[debug] [2024-12-01T16:21:02.884Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-12-01T16:21:03.403Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-12-01T16:21:03.405Z] > authorizing via signed-in user (esekaemmanuel017@gmail.com)
+[info] i  emulators: Starting emulators: auth {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: auth"}}
+[debug] [2024-12-01T16:21:03.431Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2024-12-01T16:21:03.452Z] [hub] writing locator at /tmp/hub-chatapp-project-9dee5.json
+[info] i  ui: downloading ui-v1.14.0.zip... {"metadata":{"emulator":{"name":"ui"},"message":"downloading ui-v1.14.0.zip..."}}
+[debug] [2024-12-01T16:21:32.583Z] >>> [apiv2][query] GET https://storage.googleapis.com/firebase-preview-drop/emulator/ui-v1.14.0.zip 
+[debug] [2024-12-01T16:21:33.316Z] <<< [apiv2][status] GET https://storage.googleapis.com/firebase-preview-drop/emulator/ui-v1.14.0.zip 200
+[debug] [2024-12-01T16:21:33.317Z] <<< [apiv2][body] GET https://storage.googleapis.com/firebase-preview-drop/emulator/ui-v1.14.0.zip [stream]
+[debug] [2024-12-01T16:21:38.856Z] Data is 3615311
+[debug] [2024-12-01T16:21:38.859Z] [unzip] Entry: client/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2024-12-01T16:21:38.860Z] [unzip] Processing entry: client/
+[debug] [2024-12-01T16:21:38.861Z] [unzip] mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/
+[debug] [2024-12-01T16:21:38.867Z] [unzip] Entry: client/favicon-16x16.png (compressed_size=293 bytes, uncompressed_size=293 bytes)
+[debug] [2024-12-01T16:21:38.867Z] [unzip] Processing entry: client/favicon-16x16.png
+[debug] [2024-12-01T16:21:38.868Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:38.868Z] [unzip] Writing file: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/favicon-16x16.png
+[debug] [2024-12-01T16:21:38.876Z] [unzip] Entry: client/safari-pinned-tab.svg (compressed_size=1433 bytes, uncompressed_size=2611 bytes)
+[debug] [2024-12-01T16:21:38.877Z] [unzip] Processing entry: client/safari-pinned-tab.svg
+[debug] [2024-12-01T16:21:38.878Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:38.882Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/safari-pinned-tab.svg
+[debug] [2024-12-01T16:21:38.911Z] [unzip] Entry: client/favicon.ico (compressed_size=2933 bytes, uncompressed_size=13294 bytes)
+[debug] [2024-12-01T16:21:38.912Z] [unzip] Processing entry: client/favicon.ico
+[debug] [2024-12-01T16:21:38.912Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:38.913Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/favicon.ico
+[debug] [2024-12-01T16:21:38.925Z] [unzip] Entry: client/index.html (compressed_size=1363 bytes, uncompressed_size=3071 bytes)
+[debug] [2024-12-01T16:21:38.926Z] [unzip] Processing entry: client/index.html
+[debug] [2024-12-01T16:21:38.926Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:38.928Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/index.html
+[debug] [2024-12-01T16:21:38.947Z] [unzip] Entry: client/android-chrome-192x192.png (compressed_size=2684 bytes, uncompressed_size=2684 bytes)
+[debug] [2024-12-01T16:21:38.949Z] [unzip] Processing entry: client/android-chrome-192x192.png
+[debug] [2024-12-01T16:21:38.950Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:38.951Z] [unzip] Writing file: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/android-chrome-192x192.png
+[debug] [2024-12-01T16:21:38.958Z] [unzip] Entry: client/apple-touch-icon.png (compressed_size=2123 bytes, uncompressed_size=2152 bytes)
+[debug] [2024-12-01T16:21:38.959Z] [unzip] Processing entry: client/apple-touch-icon.png
+[debug] [2024-12-01T16:21:38.959Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:38.960Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/apple-touch-icon.png
+[debug] [2024-12-01T16:21:38.970Z] [unzip] Entry: client/android-chrome-512x512.png (compressed_size=5369 bytes, uncompressed_size=5411 bytes)
+[debug] [2024-12-01T16:21:38.971Z] [unzip] Processing entry: client/android-chrome-512x512.png
+[debug] [2024-12-01T16:21:38.972Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:38.973Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/android-chrome-512x512.png
+[debug] [2024-12-01T16:21:38.999Z] [unzip] Entry: client/manifest.json (compressed_size=245 bytes, uncompressed_size=551 bytes)
+[debug] [2024-12-01T16:21:39.005Z] [unzip] Processing entry: client/manifest.json
+[debug] [2024-12-01T16:21:39.006Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:39.007Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/manifest.json
+[debug] [2024-12-01T16:21:39.021Z] [unzip] Entry: client/robots.txt (compressed_size=26 bytes, uncompressed_size=26 bytes)
+[debug] [2024-12-01T16:21:39.023Z] [unzip] Processing entry: client/robots.txt
+[debug] [2024-12-01T16:21:39.023Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:39.027Z] [unzip] Writing file: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/robots.txt
+[debug] [2024-12-01T16:21:39.039Z] [unzip] Entry: client/mstile-150x150.png (compressed_size=2034 bytes, uncompressed_size=2034 bytes)
+[debug] [2024-12-01T16:21:39.039Z] [unzip] Processing entry: client/mstile-150x150.png
+[debug] [2024-12-01T16:21:39.044Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:39.046Z] [unzip] Writing file: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/mstile-150x150.png
+[debug] [2024-12-01T16:21:39.058Z] [unzip] Entry: client/assets/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2024-12-01T16:21:39.059Z] [unzip] Processing entry: client/assets/
+[debug] [2024-12-01T16:21:39.060Z] [unzip] mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/
+[debug] [2024-12-01T16:21:39.064Z] [unzip] Entry: client/assets/index-ClZTY_JS.js.map (compressed_size=2328270 bytes, uncompressed_size=9947004 bytes)
+[debug] [2024-12-01T16:21:39.064Z] [unzip] Processing entry: client/assets/index-ClZTY_JS.js.map
+[debug] [2024-12-01T16:21:39.065Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets
+[debug] [2024-12-01T16:21:39.066Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/index-ClZTY_JS.js.map
+[debug] [2024-12-01T16:21:39.361Z] [unzip] Entry: client/assets/index-ClZTY_JS.js (compressed_size=567195 bytes, uncompressed_size=2035940 bytes)
+[debug] [2024-12-01T16:21:39.362Z] [unzip] Processing entry: client/assets/index-ClZTY_JS.js
+[debug] [2024-12-01T16:21:39.362Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets
+[debug] [2024-12-01T16:21:39.363Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/index-ClZTY_JS.js
+[debug] [2024-12-01T16:21:39.569Z] [unzip] Entry: client/assets/index-BdgySamB.css (compressed_size=35979 bytes, uncompressed_size=298654 bytes)
+[debug] [2024-12-01T16:21:39.570Z] [unzip] Processing entry: client/assets/index-BdgySamB.css
+[debug] [2024-12-01T16:21:39.571Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets
+[debug] [2024-12-01T16:21:39.579Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/index-BdgySamB.css
+[debug] [2024-12-01T16:21:39.635Z] [unzip] Entry: client/assets/extensions/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2024-12-01T16:21:39.636Z] [unzip] Processing entry: client/assets/extensions/
+[debug] [2024-12-01T16:21:39.637Z] [unzip] mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/extensions/
+[debug] [2024-12-01T16:21:39.645Z] [unzip] Entry: client/assets/extensions/default-extension.png (compressed_size=1646 bytes, uncompressed_size=1657 bytes)
+[debug] [2024-12-01T16:21:39.645Z] [unzip] Processing entry: client/assets/extensions/default-extension.png
+[debug] [2024-12-01T16:21:39.645Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/extensions
+[debug] [2024-12-01T16:21:39.646Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/extensions/default-extension.png
+[debug] [2024-12-01T16:21:39.658Z] [unzip] Entry: client/assets/img/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2024-12-01T16:21:39.658Z] [unzip] Processing entry: client/assets/img/
+[debug] [2024-12-01T16:21:39.659Z] [unzip] mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/img/
+[debug] [2024-12-01T16:21:39.662Z] [unzip] Entry: client/assets/img/database.png (compressed_size=29449 bytes, uncompressed_size=29988 bytes)
+[debug] [2024-12-01T16:21:39.663Z] [unzip] Processing entry: client/assets/img/database.png
+[debug] [2024-12-01T16:21:39.663Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/img
+[debug] [2024-12-01T16:21:39.664Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/img/database.png
+[debug] [2024-12-01T16:21:39.689Z] [unzip] Entry: client/assets/provider-icons/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2024-12-01T16:21:39.691Z] [unzip] Processing entry: client/assets/provider-icons/
+[debug] [2024-12-01T16:21:39.691Z] [unzip] mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/
+[debug] [2024-12-01T16:21:39.731Z] [unzip] Entry: client/assets/provider-icons/auth_service_saml.svg (compressed_size=575 bytes, uncompressed_size=1226 bytes)
+[debug] [2024-12-01T16:21:39.732Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_saml.svg
+[debug] [2024-12-01T16:21:39.733Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.748Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_saml.svg
+[debug] [2024-12-01T16:21:39.764Z] [unzip] Entry: client/assets/provider-icons/auth_service_phone.svg (compressed_size=261 bytes, uncompressed_size=414 bytes)
+[debug] [2024-12-01T16:21:39.765Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_phone.svg
+[debug] [2024-12-01T16:21:39.765Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.766Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_phone.svg
+[debug] [2024-12-01T16:21:39.784Z] [unzip] Entry: client/assets/provider-icons/auth_service_facebook.svg (compressed_size=289 bytes, uncompressed_size=457 bytes)
+[debug] [2024-12-01T16:21:39.785Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_facebook.svg
+[debug] [2024-12-01T16:21:39.785Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.794Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_facebook.svg
+[debug] [2024-12-01T16:21:39.821Z] [unzip] Entry: client/assets/provider-icons/auth_service_game_center.svg (compressed_size=991 bytes, uncompressed_size=3921 bytes)
+[debug] [2024-12-01T16:21:39.821Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_game_center.svg
+[debug] [2024-12-01T16:21:39.821Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.825Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_game_center.svg
+[debug] [2024-12-01T16:21:39.832Z] [unzip] Entry: client/assets/provider-icons/auth_service_apple.svg (compressed_size=230 bytes, uncompressed_size=334 bytes)
+[debug] [2024-12-01T16:21:39.833Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_apple.svg
+[debug] [2024-12-01T16:21:39.833Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.834Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_apple.svg
+[debug] [2024-12-01T16:21:39.854Z] [unzip] Entry: client/assets/provider-icons/auth_service_github.svg (compressed_size=466 bytes, uncompressed_size=838 bytes)
+[debug] [2024-12-01T16:21:39.855Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_github.svg
+[debug] [2024-12-01T16:21:39.855Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.857Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_github.svg
+[debug] [2024-12-01T16:21:39.886Z] [unzip] Entry: client/assets/provider-icons/auth_service_mslive.svg (compressed_size=203 bytes, uncompressed_size=378 bytes)
+[debug] [2024-12-01T16:21:39.887Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_mslive.svg
+[debug] [2024-12-01T16:21:39.893Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.894Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_mslive.svg
+[debug] [2024-12-01T16:21:39.900Z] [unzip] Entry: client/assets/provider-icons/auth_service_yahoo.svg (compressed_size=577 bytes, uncompressed_size=1182 bytes)
+[debug] [2024-12-01T16:21:39.901Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_yahoo.svg
+[debug] [2024-12-01T16:21:39.901Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.909Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_yahoo.svg
+[debug] [2024-12-01T16:21:39.915Z] [unzip] Entry: client/assets/provider-icons/auth_service_twitter.svg (compressed_size=444 bytes, uncompressed_size=751 bytes)
+[debug] [2024-12-01T16:21:39.915Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_twitter.svg
+[debug] [2024-12-01T16:21:39.915Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.918Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_twitter.svg
+[debug] [2024-12-01T16:21:39.942Z] [unzip] Entry: client/assets/provider-icons/auth_service_play_games.svg (compressed_size=565 bytes, uncompressed_size=1173 bytes)
+[debug] [2024-12-01T16:21:39.942Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_play_games.svg
+[debug] [2024-12-01T16:21:39.942Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.957Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_play_games.svg
+[debug] [2024-12-01T16:21:39.967Z] [unzip] Entry: client/assets/provider-icons/auth_service_email.svg (compressed_size=228 bytes, uncompressed_size=326 bytes)
+[debug] [2024-12-01T16:21:39.967Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_email.svg
+[debug] [2024-12-01T16:21:39.968Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.984Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_email.svg
+[debug] [2024-12-01T16:21:39.993Z] [unzip] Entry: client/assets/provider-icons/auth_service_google.svg (compressed_size=409 bytes, uncompressed_size=720 bytes)
+[debug] [2024-12-01T16:21:39.993Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_google.svg
+[debug] [2024-12-01T16:21:39.993Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:39.997Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_google.svg
+[debug] [2024-12-01T16:21:40.017Z] [unzip] Entry: client/assets/provider-icons/auth_service_oidc.svg (compressed_size=414 bytes, uncompressed_size=858 bytes)
+[debug] [2024-12-01T16:21:40.017Z] [unzip] Processing entry: client/assets/provider-icons/auth_service_oidc.svg
+[debug] [2024-12-01T16:21:40.017Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons
+[debug] [2024-12-01T16:21:40.018Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/assets/provider-icons/auth_service_oidc.svg
+[debug] [2024-12-01T16:21:40.024Z] [unzip] Entry: client/browserconfig.xml (compressed_size=491 bytes, uncompressed_size=822 bytes)
+[debug] [2024-12-01T16:21:40.025Z] [unzip] Processing entry: client/browserconfig.xml
+[debug] [2024-12-01T16:21:40.025Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:40.031Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/browserconfig.xml
+[debug] [2024-12-01T16:21:40.042Z] [unzip] Entry: client/favicon-32x32.png (compressed_size=475 bytes, uncompressed_size=475 bytes)
+[debug] [2024-12-01T16:21:40.045Z] [unzip] Processing entry: client/favicon-32x32.png
+[debug] [2024-12-01T16:21:40.048Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client
+[debug] [2024-12-01T16:21:40.056Z] [unzip] Writing file: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/client/favicon-32x32.png
+[debug] [2024-12-01T16:21:40.062Z] [unzip] Entry: server/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2024-12-01T16:21:40.063Z] [unzip] Processing entry: server/
+[debug] [2024-12-01T16:21:40.063Z] [unzip] mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/server/
+[debug] [2024-12-01T16:21:40.065Z] [unzip] Entry: server/server.mjs.map (compressed_size=296496 bytes, uncompressed_size=1355667 bytes)
+[debug] [2024-12-01T16:21:40.065Z] [unzip] Processing entry: server/server.mjs.map
+[debug] [2024-12-01T16:21:40.066Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/server
+[debug] [2024-12-01T16:21:40.067Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/server/server.mjs.map
+[debug] [2024-12-01T16:21:40.092Z] [unzip] Entry: server/server.mjs (compressed_size=315701 bytes, uncompressed_size=1172682 bytes)
+[debug] [2024-12-01T16:21:40.092Z] [unzip] Processing entry: server/server.mjs
+[debug] [2024-12-01T16:21:40.093Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/server
+[debug] [2024-12-01T16:21:40.093Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/server/server.mjs
+[debug] [2024-12-01T16:21:40.111Z] [unzip] Entry: server/assets/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2024-12-01T16:21:40.112Z] [unzip] Processing entry: server/assets/
+[debug] [2024-12-01T16:21:40.112Z] [unzip] mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/server/assets/
+[debug] [2024-12-01T16:21:40.114Z] [unzip] Entry: server/assets/multipart-parser-DGCUZdXu.mjs.map (compressed_size=4791 bytes, uncompressed_size=17918 bytes)
+[debug] [2024-12-01T16:21:40.115Z] [unzip] Processing entry: server/assets/multipart-parser-DGCUZdXu.mjs.map
+[debug] [2024-12-01T16:21:40.115Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/server/assets
+[debug] [2024-12-01T16:21:40.116Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/server/assets/multipart-parser-DGCUZdXu.mjs.map
+[debug] [2024-12-01T16:21:40.131Z] [unzip] Entry: server/assets/multipart-parser-DGCUZdXu.mjs (compressed_size=2621 bytes, uncompressed_size=10390 bytes)
+[debug] [2024-12-01T16:21:40.132Z] [unzip] Processing entry: server/assets/multipart-parser-DGCUZdXu.mjs
+[debug] [2024-12-01T16:21:40.132Z] [unzip] else mkdir: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/server/assets
+[debug] [2024-12-01T16:21:40.133Z] [unzip] deflating: /home/eseka/.cache/firebase/emulators/ui-v1.14.0/server/assets/multipart-parser-DGCUZdXu.mjs
+[debug] [2024-12-01T16:21:40.221Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: connect ECONNREFUSED 127.0.0.1:40001. If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────────┬────────────────┬────────────────────────────┐
+│ Emulator       │ Host:Port      │ View in Emulator UI        │
+├────────────────┼────────────────┼────────────────────────────┤
+│ Authentication │ 127.0.0.1:9099 │ http://127.0.0.1:4000/auth │
+└────────────────┴────────────────┴────────────────────────────┘
+  Emulator Hub running at 127.0.0.1:4400
+  Other reserved ports: 4500
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2024-12-01T16:25:23.755Z] Received signal SIGHUP 1
+[info]  
+[info] i  emulators: Received SIGHUP for the first time. Starting a clean shutdown. 
+[info] i  emulators: Please wait for a clean shutdown or send the SIGHUP signal again to stop right now. 
+[debug] [2024-12-01T16:25:23.793Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.800Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.804Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.812Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.815Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.819Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.822Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.829Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.835Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.839Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.847Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.850Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.853Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.854Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.857Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.861Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.865Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.867Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-12-01T16:25:23.870Z] Error: write EIO
+    at afterWriteDispatched (node:internal/stream_base_commons:160:15)
+    at writeGeneric (node:internal/stream_base_commons:151:3)
+    at Socket._writeGeneric (node:net:863:11)
+    at Socket._write (node:net:875:8)
+    at writeOrBuffer (node:internal/streams/writable:392:12)
+    at _write (node:internal/streams/writable:333:10)
+    at Writable.write (node:internal/streams/writable:337:10)
+    at Console.log (/home/eseka/.cache/firebase/tools/lib/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/eseka/.cache/firebase/tools/lib/node_modules/winston-transport/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+[error] 
