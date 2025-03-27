@@ -59,6 +59,15 @@ fun ResetPasswordEmailSentScreen(email: String, onBackToSignIn: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = stringResource(R.string.didnt_receive_email),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(

@@ -29,7 +29,6 @@ import kotlinx.coroutines.launch
 
 class SignInViewModel(
     private val userAuthUseCase: UserAuthUseCase,
-    private val credentialManager: CredentialManager,
     private val validateEmail: ValidateEmail,
     private val validatePassword: ValidateSignInPassword,
     private val authEventBus: AuthEventBus
@@ -82,7 +81,7 @@ class SignInViewModel(
                     .addCredentialOption(googleIdOption)
                     .build()
 
-                val result = credentialManager.getCredential(
+                val result = CredentialManager.create(context).getCredential(
                     request = request,
                     context = context
                 )
@@ -109,7 +108,7 @@ class SignInViewModel(
             } catch (e: GetCredentialException) {
                 _state.update { it.copy(isLoading = false) }
                 Log.e(TAG, e.message.orEmpty())
-                authEventBus.send(AuthEvent.Error(FirebaseError.UNKNOWN))
+                authEventBus.send(AuthEvent.Error(FirebaseError.GOOGLE_SIGN_IN_FAILED))
             }
 
         }
@@ -209,7 +208,6 @@ class SignInViewModel(
     }
 
     private fun sendPasswordReset() {
-        TODO("Check here")
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             userAuthUseCase.sendPasswordResetEmail(_state.value.forgotPasswordEmail)
@@ -235,35 +233,6 @@ class SignInViewModel(
 
     private fun clearForgotPasswordError() {
         _state.update { it.copy(emailVerificationError = null, forgotPasswordEmailSent = false) }
-    }
-
-    private fun signOut() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-
-            userAuthUseCase.signOut()
-                .onSuccess {
-                    _state.update { it.copy(isLoading = false) }
-                }
-                .onError { error ->
-                    _state.update { it.copy(isLoading = false) }
-                    authEventBus.send(AuthEvent.Error(error))
-                }
-        }
-    }
-
-    fun deleteAccount() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            userAuthUseCase.deleteAccount()
-                .onSuccess {
-                    _state.update { it.copy(isLoading = false) }
-                }
-                .onError { error ->
-                    _state.update { it.copy(isLoading = false) }
-                    authEventBus.send(AuthEvent.Error(error))
-                }
-        }
     }
 
     companion object {

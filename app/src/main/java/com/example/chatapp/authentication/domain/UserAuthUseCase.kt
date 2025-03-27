@@ -14,9 +14,6 @@ interface UserAuthUseCase {
     suspend fun createAccount(email: String, password: String): Result<Unit, FirebaseError>
     suspend fun sendEmailVerification(): Result<Unit, FirebaseError>
     suspend fun sendPasswordResetEmail(email: String): Result<Unit, FirebaseError>
-    suspend fun signOut(): Result<Unit, FirebaseError>
-    suspend fun deleteAccount(): Result<Unit, FirebaseError>
     suspend fun reloadUser(): Result<Unit, FirebaseError>
     suspend fun updateProfile(displayName: String?, photoUri: Uri?): Result<Unit, FirebaseError>
-    suspend fun updateEmail(newEmail: String): Result<Unit, FirebaseError>
 }

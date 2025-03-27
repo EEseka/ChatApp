@@ -5,7 +5,7 @@ import com.example.chatapp.core.domain.util.FormValidationError
 class ValidatePassword {
 
     operator fun invoke(password: String): ValidationResult {
-        if (password.isEmpty()) {
+        if (password.isBlank()) {
             return ValidationResult(false, FormValidationError.EMPTY_PASSWORD)
         }
 
