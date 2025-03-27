@@ -1,5 +1,7 @@
 package com.example.chatapp.authentication.presentation.signup
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
@@ -32,7 +34,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,7 +46,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -55,9 +55,11 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.chatapp.R
+import com.example.chatapp.authentication.presentation.components.PhotoActionButton
 import com.example.chatapp.core.domain.util.createTempPhotoUri
 import com.example.chatapp.ui.theme.ChatAppTheme
 import kotlinx.coroutines.launch
@@ -74,13 +76,19 @@ fun ProfileSetupScreen(
     val focusManager = LocalFocusManager.current
 
     var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
-    var requestCameraPermission by remember { mutableStateOf(false) }
-    var requestGalleryPermission by remember { mutableStateOf(false) }
+
+    var cameraPermissionRequested by remember { mutableStateOf(false) }
+    var galleryPermissionRequested by remember { mutableStateOf(false) }
+
+    var cameraPermissionGranted by remember { mutableStateOf(false) }
+    var galleryPermissionGranted by remember { mutableStateOf(false) }
 
     // Camera launcher
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
+        cameraPermissionRequested = false
+
         if (success && tempPhotoUri != null) {
             val mimeType = context.contentResolver.getType(tempPhotoUri!!)
             val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
@@ -94,14 +102,50 @@ fun ProfileSetupScreen(
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { contentUri ->
-        if (contentUri == null) {
-            return@rememberLauncherForActivityResult
-        }
+        galleryPermissionRequested = false
 
-        val mimeType = context.contentResolver.getType(contentUri)
-        val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
-        if (extension != null) {
-            onPhotoSelected(contentUri, extension)
+        contentUri?.let { uri ->
+            val mimeType = context.contentResolver.getType(uri)
+            val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
+            if (extension != null) {
+                onPhotoSelected(uri, extension)
+            }
+        }
+    }
+
+    fun checkAndLaunchCamera() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            cameraPermissionGranted = true
+            scope.launch {
+                tempPhotoUri = context.createTempPhotoUri()
+                tempPhotoUri?.let { uri -> cameraLauncher.launch(uri) }
+            }
+        } else {
+            cameraPermissionRequested = true
+        }
+    }
+
+    fun checkAndLaunchGallery() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // No need to request READ_MEDIA_IMAGES permission; just launch the photo picker
+            galleryLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        } else {
+            val readPermission = Manifest.permission.READ_EXTERNAL_STORAGE
+
+            if (ContextCompat.checkSelfPermission(context, readPermission) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                galleryPermissionGranted = true
+                galleryLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            } else {
+                galleryPermissionRequested = true
+            }
         }
     }
 
@@ -109,55 +153,76 @@ fun ProfileSetupScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val allGranted = permissions.all { it.value }
-        if (allGranted) {
-            if (requestCameraPermission) {
-                scope.launch {
-                    tempPhotoUri = context.createTempPhotoUri()
-                    tempPhotoUri?.let { uri -> cameraLauncher.launch(uri) }
+        // Handle camera permission result
+        permissions[Manifest.permission.CAMERA]?.let { granted ->
+            if (granted) {
+                cameraPermissionGranted = true
+                if (cameraPermissionRequested) {
+                    scope.launch {
+                        tempPhotoUri = context.createTempPhotoUri()
+                        tempPhotoUri?.let { uri -> cameraLauncher.launch(uri) }
+                    }
                 }
-            }
-            if (requestGalleryPermission) {
-                galleryLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                )
-            }
-        } else {
-            val deniedPermissions = permissions.filter { !it.value }.keys
-            val deniedMessage = when {
-                deniedPermissions.contains(android.Manifest.permission.CAMERA) -> {
-                    context.getString(R.string.camera_permission_denied)
-                }
+            } else if (cameraPermissionRequested) {
+                // Reset the flag even if permission is denied
+                cameraPermissionRequested = false
 
-                deniedPermissions.contains(android.Manifest.permission.READ_MEDIA_IMAGES) ||
-                        deniedPermissions.contains(android.Manifest.permission.READ_EXTERNAL_STORAGE) -> {
-                    context.getString(R.string.gallery_permission_denied)
-                }
-
-                else -> context.getString(R.string.permissions_denied)
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.camera_permission_denied),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-            Toast.makeText(context, deniedMessage, Toast.LENGTH_SHORT).show()
         }
-        requestCameraPermission = false
-        requestGalleryPermission = false
+
+        // Handle gallery permission result
+        val galleryPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions[Manifest.permission.READ_MEDIA_IMAGES]
+        } else {
+            permissions[Manifest.permission.READ_EXTERNAL_STORAGE]
+        }
+
+        galleryPermission?.let { granted ->
+            if (granted) {
+                galleryPermissionGranted = true
+                if (galleryPermissionRequested) {
+                    galleryLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                }
+            } else if (galleryPermissionRequested) {
+                // Reset the flag even if permission is denied
+                galleryPermissionRequested = false
+
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.gallery_permission_denied),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
-    // Permission Request Trigger (LaunchedEffect)
-    LaunchedEffect(requestCameraPermission, requestGalleryPermission) {
-        if (requestCameraPermission || requestGalleryPermission) {
+    // Permission Request Trigger
+    LaunchedEffect(cameraPermissionRequested, galleryPermissionRequested) {
+        if (cameraPermissionRequested || galleryPermissionRequested) {
             val permissions = mutableListOf<String>()
 
-            if (requestCameraPermission) {
-                permissions.add(android.Manifest.permission.CAMERA)
+            if (cameraPermissionRequested) {
+                permissions.add(Manifest.permission.CAMERA)
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                permissions.add(android.Manifest.permission.READ_MEDIA_IMAGES)
-            } else {
-                permissions.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            if (galleryPermissionRequested) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
+                } else {
+                    permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                }
             }
 
-            permissionLauncher.launch(permissions.toTypedArray())
+            if (permissions.isNotEmpty()) {
+                permissionLauncher.launch(permissions.toTypedArray())
+            }
         }
     }
 
@@ -210,7 +275,7 @@ fun ProfileSetupScreen(
             PhotoActionButton(
                 icon = Icons.Rounded.CameraAlt,
                 contentDescription = stringResource(R.string.take_photo),
-                onClick = { requestCameraPermission = true },
+                onClick = { checkAndLaunchCamera() },
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(start = 8.dp)
@@ -219,7 +284,7 @@ fun ProfileSetupScreen(
             PhotoActionButton(
                 icon = Icons.Rounded.AddPhotoAlternate,
                 contentDescription = stringResource(R.string.choose_from_gallery),
-                onClick = { requestGalleryPermission = true },
+                onClick = { checkAndLaunchGallery() },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 8.dp)
@@ -259,14 +324,19 @@ fun ProfileSetupScreen(
                 capitalization = KeyboardCapitalization.Words
             ),
             keyboardActions = KeyboardActions(
-                onDone = { focusManager.clearFocus() }
+                onDone = {
+                    focusManager.clearFocus()
+                }
             )
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = onSaveProfileClicked,
+            onClick = {
+                focusManager.clearFocus()
+                onSaveProfileClicked()
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = !state.isLoading && state.displayName.isNotBlank()
         ) {
@@ -289,26 +359,6 @@ fun ProfileSetupScreen(
     }
 }
 
-@Composable
-private fun PhotoActionButton(
-    icon: ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    SmallFloatingActionButton(
-        modifier = modifier,
-        onClick = onClick,
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription
-        )
-    }
-}
-
 @Preview(
     showBackground = true, backgroundColor = 0xFF000000, showSystemUi = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
@@ -325,3 +375,5 @@ private fun SignUpScreenPreview() {
         )
     }
 }
+
+// TODO: "Pressing done on the keyboard in the name text field launches camera"

@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.R
 import com.example.chatapp.authentication.domain.UserAuthUseCase
-import com.example.chatapp.authentication.domain.validation.ValidateDisplayName
+import com.example.chatapp.core.domain.validation.ValidateDisplayName
 import com.example.chatapp.authentication.domain.validation.ValidateEmail
 import com.example.chatapp.authentication.domain.validation.ValidatePassword
 import com.example.chatapp.authentication.domain.validation.ValidateRepeatedPassword

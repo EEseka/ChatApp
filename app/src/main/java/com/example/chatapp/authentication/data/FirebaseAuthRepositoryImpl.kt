@@ -88,16 +88,6 @@ class FirebaseAuthRepositoryImpl(private val auth: FirebaseAuth) : UserAuthUseCa
             auth.sendPasswordResetEmail(email).await()
         }
 
-    override suspend fun signOut(): Result<Unit, FirebaseError> =
-        safeFirebaseCall {
-            auth.signOut()
-        }
-
-    override suspend fun deleteAccount(): Result<Unit, FirebaseError> =
-        safeFirebaseCall {
-            currentUser?.delete()?.await()
-        }
-
     override suspend fun reloadUser(): Result<Unit, FirebaseError> =
         safeFirebaseCall {
             currentUser?.reload()?.await()
@@ -114,14 +104,4 @@ class FirebaseAuthRepositoryImpl(private val auth: FirebaseAuth) : UserAuthUseCa
             }
             currentUser?.updateProfile(profileUpdates)?.await()
         }
-
-    override suspend fun updateEmail(newEmail: String): Result<Unit, FirebaseError> =
-        safeFirebaseCall {
-            currentUser?.verifyBeforeUpdateEmail(newEmail)?.await()
-            currentUser?.reload()?.await()
-        }
-
-    companion object {
-        private const val TAG = "FirebaseAuthRepositoryImpl"
-    }
 }

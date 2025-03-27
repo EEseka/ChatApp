@@ -1,9 +1,9 @@
 package com.example.chatapp.authentication.presentation.welcome
 
 sealed class WelcomeUiState {
-    object Initial : WelcomeUiState()
-    object Onboarding : WelcomeUiState()
-    object Authenticated : WelcomeUiState()
-    object NotAuthenticated : WelcomeUiState()
-    object Error : WelcomeUiState()
+    data object Initial : WelcomeUiState()
+    data object Onboarding : WelcomeUiState()
+    data object Authenticated : WelcomeUiState()
+    data object NotAuthenticated : WelcomeUiState()
+    data object Error : WelcomeUiState()
 }

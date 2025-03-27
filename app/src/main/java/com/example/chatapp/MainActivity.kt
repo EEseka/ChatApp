@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.example.chatapp.core.navigation.WelcomeNavigation
+import com.example.chatapp.core.navigation.RootNavigation
 import com.example.chatapp.ui.theme.ChatAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ChatAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    WelcomeNavigation(modifier = Modifier.padding(innerPadding))
+                    RootNavigation(modifier = Modifier.padding(innerPadding))
                 }
             }
         }

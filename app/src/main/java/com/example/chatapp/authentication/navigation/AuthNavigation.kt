@@ -1,6 +1,5 @@
-package com.example.chatapp.core.navigation
+package com.example.chatapp.authentication.navigation
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,29 +24,26 @@ import com.example.chatapp.authentication.presentation.signup.SignUpEvents
 import com.example.chatapp.authentication.presentation.signup.SignUpScreen
 import com.example.chatapp.authentication.presentation.signup.SignUpViewModel
 import com.example.chatapp.authentication.presentation.welcome.ErrorScreen
-import com.example.chatapp.authentication.presentation.welcome.SplashScreen
 import com.example.chatapp.authentication.presentation.welcome.WelcomeScreen
-import com.example.chatapp.authentication.presentation.welcome.WelcomeUiState
 import com.example.chatapp.authentication.presentation.welcome.WelcomeViewModel
-import com.example.chatapp.chat.presentation.HomeScreen
+import com.example.chatapp.core.navigation.util.navigateAndClear
 import com.example.chatapp.core.presentation.util.ObserveAsEvents
 import com.example.chatapp.core.presentation.util.toString
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
-internal const val TAG = "WelcomeNavigation"
-
 @Composable
-fun WelcomeNavigation(
-    modifier: Modifier,
+fun AuthNavigation(
+    modifier: Modifier = Modifier,
+    startDestination: String,
+    welcomeViewModel: WelcomeViewModel,
     navController: NavHostController = rememberNavController(),
-    welcomeViewModel: WelcomeViewModel = koinViewModel(),
     signUpViewModel: SignUpViewModel = koinViewModel(),
     signInViewModel: SignInViewModel = koinViewModel(),
-    authEventBus: AuthEventBus = koinInject()
+    authEventBus: AuthEventBus = koinInject(),
+    onNavigateToHome: () -> Unit
 ) {
     val context = LocalContext.current
-    val welcomeState by welcomeViewModel.uiState.collectAsStateWithLifecycle()
     val signUpState by signUpViewModel.state.collectAsStateWithLifecycle()
     val signInState by signInViewModel.state.collectAsStateWithLifecycle()
 
@@ -57,24 +53,24 @@ fun WelcomeNavigation(
                 Toast.makeText(
                     context,
                     event.error.toString(context),
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_SHORT
                 ).show()
             }
 
             AuthEvent.SignUpSuccess -> {
                 navController.navigate(
-                    NavDestinations.EmailVerification.createRoute(NavDestinations.SignUp.route)
+                    AuthNavDestinations.EmailVerification.createRoute(AuthNavDestinations.SignUp.route)
                 )
             }
 
             AuthEvent.SignInSuccess -> {
-                val isEmailVerified = signInState.isEmailVerified == true
+                val isEmailVerified = signInState.isEmailVerified
                 if (isEmailVerified) {
-                    navigateAndClear(navController, NavDestinations.Home.route)
+                    onNavigateToHome()
                 } else {
                     signInViewModel.onEvent(SignInEvents.OnResendVerificationEmailClicked)
                     navController.navigate(
-                        NavDestinations.EmailVerification.createRoute(NavDestinations.SignIn.route)
+                        AuthNavDestinations.EmailVerification.createRoute(AuthNavDestinations.SignIn.route)
                     )
                 }
             }
@@ -93,65 +89,29 @@ fun WelcomeNavigation(
                     context.getString(R.string.profile_setup_complete),
                     Toast.LENGTH_SHORT
                 ).show()
-                navigateAndClear(navController, NavDestinations.Home.route)
+                onNavigateToHome()
             }
         }
     }
 
     NavHost(
-        modifier = modifier,
         navController = navController,
-        startDestination = NavDestinations.Splash.route
+        startDestination = startDestination
     ) {
-        composable(NavDestinations.Splash.route) {
-            SplashScreen(
-                onSplashFinished = {
-                    when (welcomeState) {
-                        WelcomeUiState.Onboarding -> {
-                            navController.navigate(NavDestinations.Welcome.route) {
-                                popUpTo(NavDestinations.Splash.route) { inclusive = true }
-                            }
-                        }
-
-                        WelcomeUiState.Authenticated -> {
-                            navigateAndClear(navController, NavDestinations.Home.route)
-                        }
-
-                        WelcomeUiState.NotAuthenticated -> {
-                            navController.navigate(NavDestinations.SignIn.route) {
-                                popUpTo(NavDestinations.Splash.route) { inclusive = true }
-                            }
-                        }
-
-                        WelcomeUiState.Initial -> {
-                            // This state should be rare, so we add some logging just in case
-                            Log.w(TAG, "Unexpected Initial state in Splash screen")
-                        }
-
-                        WelcomeUiState.Error -> {
-                            navController.navigate(NavDestinations.Error.route) {
-                                popUpTo(NavDestinations.Splash.route) { inclusive = true }
-                            }
-                        }
-                    }
-                }
-            )
-        }
-
-        composable(NavDestinations.Welcome.route) {
+        composable(AuthNavDestinations.Welcome.route) {
             WelcomeScreen(
                 onSignInClicked = {
                     welcomeViewModel.completeOnboarding()
-                    navController.navigate(NavDestinations.SignIn.route)
+                    navController.navigate(AuthNavDestinations.SignIn.route)
                 },
                 onSignUpClicked = {
                     welcomeViewModel.completeOnboarding()
-                    navController.navigate(NavDestinations.SignUp.route)
+                    navController.navigate(AuthNavDestinations.SignUp.route)
                 }
             )
         }
 
-        composable(NavDestinations.SignUp.route) {
+        composable(AuthNavDestinations.SignUp.route) {
             SignUpScreen(
                 state = signUpState,
                 onEmailValueChange = {
@@ -167,8 +127,8 @@ fun WelcomeNavigation(
                     signUpViewModel.onEvent(SignUpEvents.OnSignUpClicked)
                 },
                 onNavigateToSignIn = {
-                    navController.navigate(NavDestinations.SignIn.route) {
-                        popUpTo(NavDestinations.SignUp.route) { inclusive = true }
+                    navController.navigate(AuthNavDestinations.SignIn.route) {
+                        popUpTo(AuthNavDestinations.SignUp.route) { inclusive = true }
                     }
                 },
                 onContinueWithGoogleClicked = {
@@ -177,10 +137,10 @@ fun WelcomeNavigation(
             )
         }
 
-        composable(NavDestinations.EmailVerification.route) { backStackEntry ->
-            val screen = backStackEntry.arguments?.getString("screen")
+        composable(AuthNavDestinations.EmailVerification.route) { backStackEntry ->
+            val screen = backStackEntry.arguments?.getString("screen")!!
 
-            if (screen!! == NavDestinations.SignUp.route) {
+            if (screen == AuthNavDestinations.SignUp.route) {
                 EmailVerificationScreen(
                     state = signUpState,
                     clearEmailVerificationError = {
@@ -190,12 +150,14 @@ fun WelcomeNavigation(
                         signUpViewModel.onEvent(SignUpEvents.OnEmailVerifiedClicked)
                     },
                     onVerificationComplete = {
-                        navController.navigate(NavDestinations.ProfileSetup.route) {
-                            popUpTo(NavDestinations.EmailVerification.route) { inclusive = true }
+                        navController.navigate(AuthNavDestinations.ProfileSetup.route) {
+                            popUpTo(AuthNavDestinations.EmailVerification.route) {
+                                inclusive = true
+                            }
                         }
                     }
                 )
-            } else if (screen == NavDestinations.SignIn.route) {
+            } else if (screen == AuthNavDestinations.SignIn.route) {
                 EmailVerificationScreen(
                     state = signInState,
                     clearEmailVerificationError = {
@@ -205,22 +167,22 @@ fun WelcomeNavigation(
                         signInViewModel.onEvent(SignInEvents.OnEmailVerifiedClicked)
                     },
                     onVerificationComplete = {
-                        navigateAndClear(navController, NavDestinations.Home.route)
+                        onNavigateToHome()
                     }
                 )
             }
         }
 
-        composable(NavDestinations.Error.route) {
+        composable(AuthNavDestinations.Error.route) {
             ErrorScreen(
                 onRetryClicked = {
                     welcomeViewModel.resetAppState()
-                    navigateAndClear(navController, NavDestinations.Splash.route)
+                    navigateAndClear(navController, AuthNavDestinations.Welcome.route)
                 }
             )
         }
 
-        composable(NavDestinations.SignIn.route) {
+        composable(AuthNavDestinations.SignIn.route) {
             SignInScreen(
                 state = signInState,
                 onEmailValueChange = {
@@ -233,8 +195,8 @@ fun WelcomeNavigation(
                     signInViewModel.onEvent(SignInEvents.OnSignInClicked)
                 },
                 onNavigateToSignUp = {
-                    navController.navigate(NavDestinations.SignUp.route) {
-                        popUpTo(NavDestinations.SignIn.route) { inclusive = true }
+                    navController.navigate(AuthNavDestinations.SignUp.route) {
+                        popUpTo(AuthNavDestinations.SignIn.route) { inclusive = true }
                     }
                 },
                 onForgotPasswordEmailValueChange = {
@@ -247,7 +209,7 @@ fun WelcomeNavigation(
                     signInViewModel.onEvent(SignInEvents.ClearForgotPasswordError)
                 },
                 onNavigateToResetPasswordEmail = {
-                    navController.navigate(NavDestinations.ResetPasswordEmail.route)
+                    navController.navigate(AuthNavDestinations.ResetPasswordEmail.route)
                     signInViewModel.onEvent(SignInEvents.ClearForgotPasswordEmailSent)
                 },
                 onContinueWithGoogleClicked = {
@@ -256,18 +218,18 @@ fun WelcomeNavigation(
             )
         }
 
-        composable(NavDestinations.ResetPasswordEmail.route) {
+        composable(AuthNavDestinations.ResetPasswordEmail.route) {
             ResetPasswordEmailSentScreen(
                 email = signInState.forgotPasswordEmail,
                 onBackToSignIn = {
-                    navController.navigate(NavDestinations.SignIn.route) {
-                        popUpTo(NavDestinations.ResetPasswordEmail.route) { inclusive = true }
+                    navController.navigate(AuthNavDestinations.SignIn.route) {
+                        popUpTo(AuthNavDestinations.ResetPasswordEmail.route) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(NavDestinations.ProfileSetup.route) {
+        composable(AuthNavDestinations.ProfileSetup.route) {
             ProfileSetupScreen(
                 state = signUpState,
                 onDisplayNameChanged = {
@@ -281,18 +243,5 @@ fun WelcomeNavigation(
                 }
             )
         }
-
-        composable(NavDestinations.Home.route) {
-            HomeScreen(firebaseUser = null) //this should have its own viewModel later so don't forget
-        }
     }
 }
-
-fun navigateAndClear(navHostController: NavHostController, route: String) {
-    navHostController.navigate(route) {
-        popUpTo(0) { inclusive = true }
-        launchSingleTop = true
-    }
-}
-
-// TODO: reset password screen has an issue
