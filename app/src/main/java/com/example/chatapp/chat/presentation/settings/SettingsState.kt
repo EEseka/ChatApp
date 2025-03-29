@@ -11,6 +11,7 @@ data class SettingsState(
     val isSigningOut: Boolean = false,
     val isDeletingAccount: Boolean = false,
     val displayName: TextFieldValue = TextFieldValue(),
+    val email: String = "",
     val photoUri: Uri? = null,
     @StringRes val displayNameError: Int? = null,
     @StringRes val photoUriError: Int? = null

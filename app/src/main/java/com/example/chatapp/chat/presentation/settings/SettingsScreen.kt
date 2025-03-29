@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -45,11 +46,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,23 +80,33 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsScreen(
     state: SettingsState,
-    currentPhotoUri: Uri?,
     onDisplayNameChanged: (TextFieldValue) -> Unit,
     onUpdateProfileClicked: () -> Unit,
     onDeleteAccountClicked: () -> Unit,
     onSignOutClicked: () -> Unit,
     onPhotoSelected: (Uri, String) -> Unit,
+    onScreenLeave: () -> Unit,
+    onScreenReturn: () -> Unit
 ) {
+    // Editable Name and Pfp State restoration shenanigans
+    LaunchedEffect(Unit) {
+        onScreenReturn()
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            onScreenLeave()
+        }
+    }
     // Permission Shenanigans
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    var tempPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
-    var cameraPermissionRequested by remember { mutableStateOf(false) }
-    var galleryPermissionRequested by remember { mutableStateOf(false) }
+    var cameraPermissionRequested by rememberSaveable { mutableStateOf(false) }
+    var galleryPermissionRequested by rememberSaveable { mutableStateOf(false) }
 
-    var cameraPermissionGranted by remember { mutableStateOf(false) }
-    var galleryPermissionGranted by remember { mutableStateOf(false) }
+    var cameraPermissionGranted by rememberSaveable { mutableStateOf(false) }
+    var galleryPermissionGranted by rememberSaveable { mutableStateOf(false) }
 
     // Camera launcher
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -239,10 +252,10 @@ fun SettingsScreen(
     }
 
     // Screen starts here
-    var showSignOutDialog by remember { mutableStateOf(false) }
-    var showDeleteAccountDialog by remember { mutableStateOf(false) }
+    var showSignOutDialog by rememberSaveable { mutableStateOf(false) }
+    var showDeleteAccountDialog by rememberSaveable { mutableStateOf(false) }
 
-    var isEditingDisplayName by remember { mutableStateOf(false) }
+    var isEditingDisplayName by rememberSaveable { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
     val displayNameFocusRequester = remember { FocusRequester() }
@@ -286,11 +299,11 @@ fun SettingsScreen(
                                 .clip(CircleShape),
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
-                            val photoToShow = state.photoUri ?: currentPhotoUri
-                            if (photoToShow != null) {
+                            Log.d("SettingsScreen", "PhotoUri: ${state.photoUri}")
+                            if (state.photoUri != null) {
                                 AsyncImage(
                                     model = ImageRequest.Builder(LocalContext.current)
-                                        .data(photoToShow)
+                                        .data(state.photoUri)
                                         .crossfade(true)
                                         .build(),
                                     contentDescription = stringResource(R.string.profile_photo),
@@ -348,6 +361,14 @@ fun SettingsScreen(
                         isLoading = state.isProfileUpdating,
                         focusRequester = displayNameFocusRequester,
                         focusManager = focusManager
+                    )
+                    //Email (Non editable)
+                    Text(
+                        text = state.email,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .align(Alignment.Start),
                     )
                 }
             }
@@ -512,14 +533,16 @@ private fun SettingsScreenPreview() {
         SettingsScreen(
             state = SettingsState(
                 displayName = TextFieldValue("John Pork"),
+                email = "johnpork@gmail.com",
                 photoUriError = R.string.error_unknown
             ),
             onDisplayNameChanged = {},
             onUpdateProfileClicked = {},
             onDeleteAccountClicked = {},
             onSignOutClicked = {},
-            currentPhotoUri = null,
-            onPhotoSelected = { uri, extension -> }
+            onPhotoSelected = { uri, extension -> },
+            onScreenLeave = {},
+            onScreenReturn = {}
         )
     }
 }

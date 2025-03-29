@@ -5,7 +5,11 @@ import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetPasswordOption
+import androidx.credentials.PasswordCredential
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.R
@@ -31,9 +35,9 @@ class SignInViewModel(
     private val userAuthUseCase: UserAuthUseCase,
     private val validateEmail: ValidateEmail,
     private val validatePassword: ValidateSignInPassword,
-    private val authEventBus: AuthEventBus
+    private val authEventBus: AuthEventBus,
+    private val appContext: Context
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(SignInState())
     val state = _state.stateIn(
         viewModelScope,
@@ -42,6 +46,7 @@ class SignInViewModel(
     )
     private val isEmailVerified
         get() = userAuthUseCase.currentUser?.isEmailVerified == true
+    private val credentialManager = CredentialManager.create(appContext)
 
     fun onEvent(event: SignInEvents) {
         when (event) {
@@ -59,31 +64,107 @@ class SignInViewModel(
                 _state.update { it.copy(forgotPasswordEmail = event.email.trim()) }
             }
 
-            is SignInEvents.OnSignInWithGoogleClicked -> signInWithGoogle(context = event.context)
+            SignInEvents.OnSignInWithGoogleClicked -> signInWithGoogle()
             SignInEvents.OnResendVerificationEmailClicked -> resendVerificationEmail()
             SignInEvents.OnSignInClicked -> validateAndSignIn()
             SignInEvents.OnEmailVerifiedClicked -> checkEmailVerification()
             SignInEvents.OnSendPasswordResetClicked -> validateAndSendPasswordReset()
             SignInEvents.ClearForgotPasswordEmailSent -> clearForgotPasswordEmailSent()
+            SignInEvents.OnAutomaticSignInInitiated -> automaticSignIn()
         }
     }
 
-    private fun signInWithGoogle(context: Context) {
+    private fun automaticSignIn() {
+        _state.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                val googleIdOption = GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(true)
+                    .setServerClientId(appContext.getString(R.string.default_web_client_id))
+                    .build()
+
+                val credentialResponse = credentialManager.getCredential(
+                    context = appContext,
+                    request = GetCredentialRequest.Builder()
+                        .addCredentialOption(GetPasswordOption())
+                        .addCredentialOption(googleIdOption)
+                        .build()
+                )
+                when (val credential = credentialResponse.credential) {
+                    is PasswordCredential -> {
+                        userAuthUseCase.signIn(credential.id, credential.password)
+                            .onSuccess {
+                                _state.update { it.copy(isLoading = false, isEmailVerified = true) }
+                                authEventBus.send(AuthEvent.SignInSuccess)
+                            }
+                            .onError { error ->
+                                _state.update { it.copy(isLoading = false) }
+                                authEventBus.send(AuthEvent.Error(error))
+                            }
+                    }
+
+                    is CustomCredential -> {
+                        if (credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                            val googleIdTokenCredential =
+                                GoogleIdTokenCredential.createFrom(credential.data)
+                            userAuthUseCase.signInWithGoogle(googleIdTokenCredential.idToken)
+                                .onSuccess {
+                                    _state.update {
+                                        it.copy(
+                                            isLoading = false,
+                                            isEmailVerified = true
+                                        )
+                                    }
+                                    authEventBus.send(AuthEvent.SignInSuccess)
+                                }
+                                .onError { error ->
+                                    _state.update { it.copy(isLoading = false) }
+                                    authEventBus.send(AuthEvent.Error(error))
+                                }
+                        } else {
+                            _state.update { it.copy(isLoading = false) }
+                            authEventBus.send(AuthEvent.Error(FirebaseError.GOOGLE_SIGN_IN_FAILED))
+                            Log.e(TAG, "Unknown credential type: ${credential.type}")
+                        }
+                    }
+
+                    else -> {
+                        _state.update { it.copy(isLoading = false) }
+                        authEventBus.send(AuthEvent.Error(FirebaseError.GOOGLE_SIGN_IN_FAILED))
+                        Log.e(TAG, "Unsupported credential type")
+                    }
+                }
+
+            } catch (e: GetCredentialCancellationException) {
+                _state.update { it.copy(isLoading = false) }
+                Log.d(TAG, "User cancelled the sign-in request", e)
+            } catch (e: NoCredentialException) {
+                _state.update { it.copy(isLoading = false) }
+                Log.w(TAG, "No credential found", e)
+            } catch (e: GetCredentialException) {
+                _state.update { it.copy(isLoading = false) }
+                Log.e(TAG, "Error getting credential", e)
+                authEventBus.send(AuthEvent.Error(FirebaseError.CREDENTIAL_FETCHING_ERROR))
+            }
+        }
+    }
+
+    private fun signInWithGoogle() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             try {
                 val googleIdOption = GetGoogleIdOption.Builder()
                     .setFilterByAuthorizedAccounts(false)
-                    .setServerClientId(context.getString(R.string.default_web_client_id))
+                    .setServerClientId(appContext.getString(R.string.default_web_client_id))
                     .build()
 
                 val request = GetCredentialRequest.Builder()
                     .addCredentialOption(googleIdOption)
                     .build()
 
-                val result = CredentialManager.create(context).getCredential(
+                val result = credentialManager.getCredential(
                     request = request,
-                    context = context
+                    context = appContext
                 )
 
                 val credential = result.credential

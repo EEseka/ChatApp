@@ -1,12 +1,16 @@
 package com.example.chatapp.authentication.presentation.signup
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.credentials.CreatePasswordRequest
+import androidx.credentials.CredentialManager
+import androidx.credentials.exceptions.CreateCredentialCancellationException
+import androidx.credentials.exceptions.CreateCredentialException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.R
 import com.example.chatapp.authentication.domain.UserAuthUseCase
-import com.example.chatapp.core.domain.validation.ValidateDisplayName
 import com.example.chatapp.authentication.domain.validation.ValidateEmail
 import com.example.chatapp.authentication.domain.validation.ValidatePassword
 import com.example.chatapp.authentication.domain.validation.ValidateRepeatedPassword
@@ -14,8 +18,10 @@ import com.example.chatapp.authentication.presentation.AuthEvent
 import com.example.chatapp.authentication.presentation.AuthEventBus
 import com.example.chatapp.core.domain.FileManager
 import com.example.chatapp.core.domain.ImageCompressor
+import com.example.chatapp.core.domain.util.FirebaseError
 import com.example.chatapp.core.domain.util.onError
 import com.example.chatapp.core.domain.util.onSuccess
+import com.example.chatapp.core.domain.validation.ValidateDisplayName
 import com.example.chatapp.core.presentation.util.toStringRes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,7 +37,8 @@ class SignUpViewModel(
     private val validateDisplayName: ValidateDisplayName,
     private val imageCompressor: ImageCompressor,
     private val fileManager: FileManager,
-    private val authEventBus: AuthEventBus
+    private val authEventBus: AuthEventBus,
+    private val appContext: Context
 ) : ViewModel() {
     private val _state = MutableStateFlow(SignUpState())
     val state = _state.stateIn(
@@ -40,6 +47,7 @@ class SignUpViewModel(
         SignUpState()
     )
     private val isEmailVerified get() = userAuthUseCase.currentUser?.isEmailVerified == true
+    private val credentialManager = CredentialManager.create(appContext)
 
     fun onEvent(event: SignUpEvents) {
         when (event) {
@@ -59,7 +67,7 @@ class SignUpViewModel(
             SignUpEvents.OnEmailVerifiedClicked -> checkEmailVerification()
             SignUpEvents.ClearEmailVerificationError -> clearEmailVerificationError()
             is SignUpEvents.OnDisplayNameChanged -> {
-                _state.update { it.copy(displayName = event.name.trim()) }
+                _state.update { it.copy(displayName = event.name) }
             }
 
             is SignUpEvents.OnPhotoSelected -> selectImage(event.uri, event.extension)
@@ -101,6 +109,21 @@ class SignUpViewModel(
 
             userAuthUseCase.createAccount(email, password)
                 .onSuccess {
+                    try {
+                        credentialManager.createCredential(
+                            context = appContext,
+                            request = CreatePasswordRequest(
+                                id = email,
+                                password = password
+                            )
+                        )
+                    } catch (e: CreateCredentialCancellationException) {
+                        authEventBus.send(AuthEvent.Error(FirebaseError.CREDENTIAL_CREATION_ERROR))
+                        Log.w(TAG, "User cancelled credential creation", e)
+                    } catch (e: CreateCredentialException) {
+                        authEventBus.send(AuthEvent.Error(FirebaseError.CREDENTIAL_CREATION_ERROR))
+                        Log.e(TAG, "Error creating credential", e)
+                    }
                     _state.update { it.copy(isLoading = false) }
                     sendVerificationEmail()
                     authEventBus.send(AuthEvent.SignUpSuccess)
@@ -176,7 +199,7 @@ class SignUpViewModel(
     }
 
     private fun validateAndSaveProfile() {
-        val displayNameResult = validateDisplayName(_state.value.displayName)
+        val displayNameResult = validateDisplayName(_state.value.displayName.trim())
 
         if (!displayNameResult.successful) {
             _state.update {
@@ -189,7 +212,7 @@ class SignUpViewModel(
             _state.update { it.copy(isLoading = true) }
 
             userAuthUseCase.updateProfile(
-                displayName = _state.value.displayName,
+                displayName = _state.value.displayName.trim(),
                 photoUri = _state.value.photoUri
             ).onSuccess {
                 _state.update { it.copy(isLoading = false) }

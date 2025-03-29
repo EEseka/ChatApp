@@ -7,7 +7,7 @@ import com.example.chatapp.core.domain.util.FirebaseError
 fun FirebaseError.toString(context: Context): String {
     val resId = when (this) {
         FirebaseError.INVALID_EMAIL -> R.string.error_invalid_email
-        FirebaseError.USER_NOT_FOUND -> R.string.error_user_not_found
+        FirebaseError.USER_NOT_FOUND -> R.string.account_not_found
         FirebaseError.WRONG_PASSWORD -> R.string.error_wrong_password
         FirebaseError.EMAIL_ALREADY_IN_USE -> R.string.error_email_already_in_use
         FirebaseError.WEAK_PASSWORD -> R.string.error_weak_password
@@ -28,8 +28,10 @@ fun FirebaseError.toString(context: Context): String {
         FirebaseError.QUOTA_EXCEEDED -> R.string.error_quota_exceeded
         FirebaseError.UNAUTHORIZED_DOMAIN -> R.string.error_unauthorized_domain
         FirebaseError.INVALID_PHOTO_URL -> R.string.error_invalid_photo_url
+        FirebaseError.FAILED_REAUTHENTICATION -> R.string.error_failed_reauthentication
         FirebaseError.GOOGLE_SIGN_IN_FAILED -> R.string.error_google_sign_in_failed
-        FirebaseError.ACCOUNT_NOT_FOUND -> R.string.account_not_found
+        FirebaseError.CREDENTIAL_CREATION_ERROR -> R.string.error_credential_creation_error
+        FirebaseError.CREDENTIAL_FETCHING_ERROR -> R.string.error_credential_fetching_error
     }
     return context.getString(resId)
 }
