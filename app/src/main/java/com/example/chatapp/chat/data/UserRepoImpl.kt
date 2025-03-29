@@ -5,6 +5,7 @@ import com.example.chatapp.chat.domain.UserRepoUseCase
 import com.example.chatapp.core.data.firebase.safeFirebaseCall
 import com.example.chatapp.core.domain.util.FirebaseError
 import com.example.chatapp.core.domain.util.Result
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.userProfileChangeRequest
@@ -71,4 +72,10 @@ class UserRepoImpl(private val auth: FirebaseAuth) : UserRepoUseCase {
             currentUser?.updateProfile(profileUpdates)?.await()
             currentUser?.reload()?.await()
         }
+
+    override suspend fun reAuthenticateUser(credential: AuthCredential): Result<Unit, FirebaseError> =
+        safeFirebaseCall {
+            currentUser?.reauthenticate(credential)?.await()
+        }
+
 }

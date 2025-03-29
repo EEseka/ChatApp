@@ -27,7 +27,7 @@
     <string name="error_credential_already_in_use">This credential is already in use by another account. Please try a different one.</string>
     <string name="error_invalid_credential">The provided email or password is incorrect. Please try again.</string>
     <string name="error_user_disabled">This user account has been disabled. Please contact support for assistance.</string>
-    <string name="error_requires_recent_login">This operation requires recent authentication. Please log in again and try.</string>
+    <string name="error_requires_recent_login">Please sign out and sign back in to continue.</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="confirm_password">Confirm Password</string>
@@ -110,4 +110,9 @@
     <string name="anonymous">Anonymous</string>
     <string name="edit">Edit</string>
     <string name="home">Home</string>
+    <string name="error_failed_reauthentication">Error occured while Reauthenticating, if it persists please contact support</string>
+    <string name="verify_your_password">Verify Your Password</string>
+    <string name="confirm_to_delete_account">Please confirm your password to delete your account</string>
+    <string name="error_credential_creation_error">Error Saving Credential!</string>
+    <string name="error_credential_fetching_error">Error Fetching Credential!</string>
 </resources>

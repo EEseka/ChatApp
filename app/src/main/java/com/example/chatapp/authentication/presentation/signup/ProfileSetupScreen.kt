@@ -40,8 +40,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,13 +75,13 @@ fun ProfileSetupScreen(
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
 
-    var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    var tempPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
-    var cameraPermissionRequested by remember { mutableStateOf(false) }
-    var galleryPermissionRequested by remember { mutableStateOf(false) }
+    var cameraPermissionRequested by rememberSaveable { mutableStateOf(false) }
+    var galleryPermissionRequested by rememberSaveable { mutableStateOf(false) }
 
-    var cameraPermissionGranted by remember { mutableStateOf(false) }
-    var galleryPermissionGranted by remember { mutableStateOf(false) }
+    var cameraPermissionGranted by rememberSaveable { mutableStateOf(false) }
+    var galleryPermissionGranted by rememberSaveable { mutableStateOf(false) }
 
     // Camera launcher
     val cameraLauncher = rememberLauncherForActivityResult(

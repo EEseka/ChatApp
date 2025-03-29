@@ -1,34 +1,60 @@
 package com.example.chatapp.chat.presentation.settings
 
+import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetPasswordOption
+import androidx.credentials.PasswordCredential
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.chatapp.R
 import com.example.chatapp.chat.domain.UserRepoUseCase
 import com.example.chatapp.chat.presentation.MainEvent
 import com.example.chatapp.chat.presentation.MainEventBus
 import com.example.chatapp.core.domain.FileManager
 import com.example.chatapp.core.domain.ImageCompressor
+import com.example.chatapp.core.domain.util.FirebaseError
 import com.example.chatapp.core.domain.util.onError
 import com.example.chatapp.core.domain.util.onSuccess
 import com.example.chatapp.core.domain.validation.ValidateDisplayName
 import com.example.chatapp.core.presentation.util.toStringRes
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+
 class SettingsViewModel(
     private val userRepoUseCase: UserRepoUseCase,
     private val imageCompressor: ImageCompressor,
     private val fileManager: FileManager,
     private val validateDisplayName: ValidateDisplayName,
-    private val mainEventBus: MainEventBus
+    private val mainEventBus: MainEventBus,
+    private val appContext: Context
 ) : ViewModel() {
+    private val user = userRepoUseCase.currentUser
 
-    val user = userRepoUseCase.currentUser
+    // State preservation variables
+    private var lastEditTimestamp: Long = 0
+    private var temporaryDisplayName: TextFieldValue? = null
+    private var temporaryPhotoUri: Uri? = null
+
     private val _state = MutableStateFlow(
         SettingsState(
             displayName = TextFieldValue(
@@ -36,25 +62,86 @@ class SettingsViewModel(
                 selection = TextRange(
                     user?.displayName?.length ?: (4 + user?.uid.toString().length)
                 )
-            )
+            ),
+            email = user?.email ?: "",
+            photoUri = user?.photoUrl
         )
     )
     val state = _state.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000L),
-        SettingsState()
+        SettingsState(
+            displayName = TextFieldValue(
+                text = user?.displayName ?: "User${user?.uid}",
+                selection = TextRange(
+                    user?.displayName?.length ?: (4 + user?.uid.toString().length)
+                )
+            ),
+            email = user?.email ?: "",
+            photoUri = user?.photoUrl
+        )
     )
+    private val credentialManager = CredentialManager.create(appContext)
 
     fun onEvent(event: SettingsEvents) {
         when (event) {
-            SettingsEvents.OnDeleteAccountClicked -> deleteAccount()
+            is SettingsEvents.OnDeleteAccountClicked -> deleteAccount()
             is SettingsEvents.OnDisplayNameChanged -> {
+                lastEditTimestamp = System.currentTimeMillis()
+                temporaryDisplayName = event.name
                 _state.update { it.copy(displayName = event.name) }
             }
 
             is SettingsEvents.OnPhotoSelected -> selectImage(event.uri, event.extension)
             SettingsEvents.OnSignOutClicked -> signOut()
             SettingsEvents.OnUpdateProfileClicked -> validateAndUpdateProfile()
+            SettingsEvents.OnScreenLeave -> preserveTemporaryState()
+            SettingsEvents.OnScreenReturn -> restoreTemporaryState()
+        }
+    }
+
+    private fun preserveTemporaryState() {
+        viewModelScope.launch {
+            // Start a timer to potentially reset state
+            delay(30_000)
+
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastEditTimestamp >= 30_000) {
+                // Reset temporary state if 30 seconds have passed
+                temporaryDisplayName = null
+                temporaryPhotoUri = null
+            }
+        }
+    }
+
+    private fun restoreTemporaryState() {
+        val currentTime = System.currentTimeMillis()
+
+        // Restore temporary display name if within 30 seconds
+        if (temporaryDisplayName != null &&
+            currentTime - lastEditTimestamp < 30_000
+        ) {
+            _state.update {
+                it.copy(
+                    displayName = temporaryDisplayName!!,
+                    photoUri = temporaryPhotoUri ?: it.photoUri
+                )
+            }
+        } else {
+            // Reset to original state if 30 seconds have passed
+            _state.update {
+                it.copy(
+                    displayName = TextFieldValue(
+                        text = user?.displayName ?: "User${user?.uid}",
+                        selection = TextRange(
+                            user?.displayName?.length ?: (4 + user?.uid.toString().length)
+                        )
+                    ),
+                    photoUri = user?.photoUrl
+                )
+            }
+            temporaryDisplayName = null
+            temporaryPhotoUri = null
         }
     }
 
@@ -68,6 +155,10 @@ class SettingsViewModel(
                         byteArray,
                         "$PHOTO_FILE_NAME${System.currentTimeMillis()}.$extension"
                     )
+
+                    lastEditTimestamp = System.currentTimeMillis()
+                    temporaryPhotoUri = compressedUri
+
                     _state.update {
                         it.copy(
                             photoUri = compressedUri,
@@ -131,19 +222,153 @@ class SettingsViewModel(
     private fun deleteAccount() {
         viewModelScope.launch {
             _state.update { it.copy(isDeletingAccount = true) }
-            userRepoUseCase.deleteAccount()
-                .onSuccess {
+
+            if (user == null) {
+                _state.update { it.copy(isDeletingAccount = false) }
+                mainEventBus.send(MainEvent.Error(FirebaseError.USER_NOT_FOUND))
+                return@launch
+            }
+
+            try {
+                // Get actual provider data
+                val providerData = user.providerData
+
+                // Check available providers (look for email or Google)
+                val hasEmailProvider =
+                    providerData.any { it.providerId == EmailAuthProvider.PROVIDER_ID }
+                val hasGoogleProvider =
+                    providerData.any { it.providerId == GoogleAuthProvider.PROVIDER_ID }
+
+                if (hasEmailProvider || hasGoogleProvider) {
+                    reAuthenticateAndDeleteAccount()
+                } else {
                     _state.update { it.copy(isDeletingAccount = false) }
-                    mainEventBus.send(MainEvent.AccountDeletionComplete)
+                    mainEventBus.send(MainEvent.Error(FirebaseError.UNKNOWN))
+                    Log.e(
+                        TAG,
+                        "Unsupported provider. Available providers: ${providerData.map { it.providerId }}"
+                    )
                 }
-                .onError { error ->
-                    _state.update { it.copy(isDeletingAccount = false) }
-                    mainEventBus.send(MainEvent.Error(error))
-                }
+            } catch (e: Exception) {
+                _state.update { it.copy(isDeletingAccount = false) }
+                mainEventBus.send(MainEvent.Error(FirebaseError.FAILED_REAUTHENTICATION))
+                Log.e(TAG, "Failed to re-authenticate user", e)
+            }
         }
     }
 
+    private fun reAuthenticateAndDeleteAccount() {
+        viewModelScope.launch {
+            try {
+                // Get available providers
+                val providerData = user?.providerData ?: emptyList()
+                val hasEmailProvider =
+                    providerData.any { it.providerId == EmailAuthProvider.PROVIDER_ID }
+                val hasGoogleProvider =
+                    providerData.any { it.providerId == GoogleAuthProvider.PROVIDER_ID }
+
+                // Set up request with appropriate options
+                val request = GetCredentialRequest.Builder()
+
+                // Add email option if available
+                if (hasEmailProvider) {
+                    request.addCredentialOption(GetPasswordOption())
+                }
+
+                // Add Google option if available
+                if (hasGoogleProvider) {
+                    val googleIdOption = GetGoogleIdOption.Builder()
+                        .setFilterByAuthorizedAccounts(true)
+                        .setServerClientId(appContext.getString(R.string.default_web_client_id))
+                        .build()
+                    request.addCredentialOption(googleIdOption)
+                }
+
+                val credentialResponse = credentialManager.getCredential(
+                    context = appContext,
+                    request = request.build()
+                )
+
+                when (val credential = credentialResponse.credential) {
+                    is PasswordCredential -> {
+                        val email = user?.email ?: return@launch
+                        val authCredential = EmailAuthProvider.getCredential(
+                            email,
+                            credential.password
+                        )
+                        completeReauthenticationAndDeletion(authCredential)
+                    }
+
+                    is CustomCredential -> {
+                        if (credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                            val googleIdTokenCredential =
+                                GoogleIdTokenCredential.createFrom(credential.data)
+                            val authCredential = GoogleAuthProvider.getCredential(
+                                googleIdTokenCredential.idToken,
+                                null
+                            )
+                            completeReauthenticationAndDeletion(authCredential)
+                        } else {
+                            _state.update { it.copy(isDeletingAccount = false) }
+                            mainEventBus.send(MainEvent.Error(FirebaseError.FAILED_REAUTHENTICATION))
+                            Log.e(TAG, "Unknown credential type: ${credential.type}")
+                        }
+                    }
+
+                    else -> {
+                        _state.update { it.copy(isDeletingAccount = false) }
+                        mainEventBus.send(MainEvent.Error(FirebaseError.FAILED_REAUTHENTICATION))
+                        Log.e(TAG, "Unsupported credential type")
+                    }
+                }
+            } catch (e: GetCredentialCancellationException) {
+                _state.update { it.copy(isDeletingAccount = false) }
+                Log.d(TAG, "User cancelled the re-authentication request", e)
+            } catch (e: NoCredentialException) {
+                // User did not save to credential Manager but we can still delete account provided they recently signed in
+                Log.d(TAG, "No credential found", e)
+                userRepoUseCase.deleteAccount()
+                    .onSuccess {
+                        _state.update { it.copy(isDeletingAccount = false) }
+                        mainEventBus.send(MainEvent.AccountDeletionComplete)
+                    }
+                    .onError { error ->
+                        _state.update { it.copy(isDeletingAccount = false) }
+                        mainEventBus.send(MainEvent.Error(error))
+                    }
+            } catch (e: GetCredentialException) {
+                _state.update { it.copy(isDeletingAccount = false) }
+                Log.e(TAG, "Error getting credential", e)
+                mainEventBus.send(MainEvent.Error(FirebaseError.FAILED_REAUTHENTICATION))
+            } catch (e: Exception) {
+                _state.update { it.copy(isDeletingAccount = false) }
+                Log.e(TAG, "Re-authentication error", e)
+                mainEventBus.send(MainEvent.Error(FirebaseError.FAILED_REAUTHENTICATION))
+            }
+        }
+    }
+
+    private suspend fun completeReauthenticationAndDeletion(authCredential: AuthCredential) {
+        userRepoUseCase.reAuthenticateUser(authCredential)
+            .onSuccess {
+                userRepoUseCase.deleteAccount()
+                    .onSuccess {
+                        _state.update { it.copy(isDeletingAccount = false) }
+                        mainEventBus.send(MainEvent.AccountDeletionComplete)
+                    }
+                    .onError { error ->
+                        _state.update { it.copy(isDeletingAccount = false) }
+                        mainEventBus.send(MainEvent.Error(error))
+                    }
+            }
+            .onError { error ->
+                _state.update { it.copy(isDeletingAccount = false) }
+                mainEventBus.send(MainEvent.Error(error))
+            }
+    }
+
     private companion object {
+        private const val TAG = "SettingsViewModel"
         private const val MAX_IMAGE_SIZE = 256 * 1024L // 256KB
         private const val PHOTO_FILE_NAME = "compressed_profile_photo"
     }

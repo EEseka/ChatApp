@@ -45,7 +45,6 @@ fun EmailVerificationScreen(
 ) {
     // Side effect for handling verification completion
     LaunchedEffect(state.isEmailVerified) {
-        Log.d("EmailVerificationScreen", "Is Email Verified = ${state.isEmailVerified}")
         if (state.isEmailVerified) {
             onVerificationComplete()
         }

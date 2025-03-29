@@ -1,8 +1,10 @@
 package com.example.chatapp.authentication.navigation
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -25,6 +27,7 @@ import com.example.chatapp.authentication.presentation.signup.SignUpScreen
 import com.example.chatapp.authentication.presentation.signup.SignUpViewModel
 import com.example.chatapp.authentication.presentation.welcome.ErrorScreen
 import com.example.chatapp.authentication.presentation.welcome.WelcomeScreen
+import com.example.chatapp.authentication.presentation.welcome.WelcomeUiState
 import com.example.chatapp.authentication.presentation.welcome.WelcomeViewModel
 import com.example.chatapp.core.navigation.util.navigateAndClear
 import com.example.chatapp.core.presentation.util.ObserveAsEvents
@@ -32,10 +35,12 @@ import com.example.chatapp.core.presentation.util.toString
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
+private const val TAG = "AuthNavigation"
+
 @Composable
 fun AuthNavigation(
     modifier: Modifier = Modifier,
-    startDestination: String,
+    welcomeState: WelcomeUiState,
     welcomeViewModel: WelcomeViewModel,
     navController: NavHostController = rememberNavController(),
     signUpViewModel: SignUpViewModel = koinViewModel(),
@@ -94,6 +99,24 @@ fun AuthNavigation(
         }
     }
 
+    val startDestination = rememberSaveable {
+        when (welcomeState) {
+            WelcomeUiState.Onboarding -> AuthNavDestinations.Welcome.route
+            WelcomeUiState.NotAuthenticated -> AuthNavDestinations.SignIn.route
+            WelcomeUiState.Initial -> {
+                // This state should be rare, so we add some logging just in case
+                Log.w(TAG, "Unexpected Initial state in Splash screen")
+                AuthNavDestinations.Welcome.route
+            }
+
+            WelcomeUiState.Error -> AuthNavDestinations.Error.route
+            WelcomeUiState.Authenticated -> {
+                // Can Never be reached, but we need to handle all cases
+                AuthNavDestinations.SignIn.route
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -132,7 +155,7 @@ fun AuthNavigation(
                     }
                 },
                 onContinueWithGoogleClicked = {
-                    signInViewModel.onEvent(SignInEvents.OnSignInWithGoogleClicked(it))
+                    signInViewModel.onEvent(SignInEvents.OnSignInWithGoogleClicked)
                 }
             )
         }
@@ -213,7 +236,10 @@ fun AuthNavigation(
                     signInViewModel.onEvent(SignInEvents.ClearForgotPasswordEmailSent)
                 },
                 onContinueWithGoogleClicked = {
-                    signInViewModel.onEvent(SignInEvents.OnSignInWithGoogleClicked(it))
+                    signInViewModel.onEvent(SignInEvents.OnSignInWithGoogleClicked)
+                },
+                onAutomaticSignInInitiated = {
+                    signInViewModel.onEvent(SignInEvents.OnAutomaticSignInInitiated)
                 }
             )
         }

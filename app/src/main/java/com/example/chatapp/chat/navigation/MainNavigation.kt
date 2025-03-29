@@ -1,8 +1,6 @@
 package com.example.chatapp.chat.navigation
 
-import android.os.Build
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
@@ -31,18 +29,14 @@ import com.example.chatapp.core.presentation.util.toString
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainNavigation(
     modifier: Modifier = Modifier,
-    settingsViewModel: SettingsViewModel = koinViewModel(),
-    mainEventBus: MainEventBus = koinInject(),
     navController: NavHostController = rememberNavController(),
+    mainEventBus: MainEventBus = koinInject(),
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
-    val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
-    val user = settingsViewModel.user
 
     ObserveAsEvents(events = mainEventBus.events) { event ->
         when (event) {
@@ -118,15 +112,17 @@ fun MainNavigation(
         ) {
             composable(MainNavDestinations.Home.route) {
                 HomeScreen(
-                    displayName = user?.displayName!!,
-                    photoUrl = user?.photoUrl
+                    displayName = "Champion",
+                    photoUrl = null
                 )
             }
 
             composable(MainNavDestinations.Settings.route) {
+                val settingsViewModel = koinViewModel<SettingsViewModel>()
+                val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
+
                 SettingsScreen(
                     state = settingsState,
-                    currentPhotoUri = user?.photoUrl,
                     onDisplayNameChanged = {
                         settingsViewModel.onEvent(SettingsEvents.OnDisplayNameChanged(it))
                     },
@@ -142,9 +138,14 @@ fun MainNavigation(
                     onPhotoSelected = { uri, extension ->
                         settingsViewModel.onEvent(SettingsEvents.OnPhotoSelected(uri, extension))
                     },
+                    onScreenLeave = {
+                        settingsViewModel.onEvent(SettingsEvents.OnScreenLeave)
+                    },
+                    onScreenReturn = {
+                        settingsViewModel.onEvent(SettingsEvents.OnScreenReturn)
+                    },
                 )
             }
-            // Other composable destinations like Chat, Profile, Settings
         }
     }
 }

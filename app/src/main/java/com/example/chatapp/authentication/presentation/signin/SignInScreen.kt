@@ -1,6 +1,5 @@
 package com.example.chatapp.authentication.presentation.signin
 
-import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,17 +24,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewDynamicColors
-import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.chatapp.R
 import com.example.chatapp.authentication.presentation.components.EmailInputField
@@ -54,16 +51,20 @@ fun SignInScreen(
     onForgotPasswordClicked: () -> Unit,
     onDismissForgotPasswordDialog: () -> Unit,
     onNavigateToResetPasswordEmail: () -> Unit,
-    onContinueWithGoogleClicked: (Context) -> Unit
+    onContinueWithGoogleClicked: () -> Unit,
+    onAutomaticSignInInitiated: () -> Unit
 ) {
-    var passwordVisible by remember { mutableStateOf(false) }
-    var showForgotPasswordDialog by remember { mutableStateOf(false) }
+    // Try Signing in automatically using Credential Manager
+    LaunchedEffect(Unit) {
+        onAutomaticSignInInitiated()
+    }
+
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    var showForgotPasswordDialog by rememberSaveable { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
     val emailFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
-
-    val context = LocalContext.current
 
     // Forgot Password Dialog
     if (showForgotPasswordDialog) {
@@ -253,7 +254,7 @@ fun SignInScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         GoogleSignInButton(
-            onClick = { onContinueWithGoogleClicked(context) },
+            onClick = onContinueWithGoogleClicked,
             modifier = Modifier.fillMaxWidth(),
             enabled = !state.isLoading
         )
@@ -278,7 +279,8 @@ private fun SignUpScreenPreview() {
             onDismissForgotPasswordDialog = {},
             onForgotPasswordEmailValueChange = {},
             onNavigateToResetPasswordEmail = {},
-            onContinueWithGoogleClicked = {}
+            onContinueWithGoogleClicked = {},
+            onAutomaticSignInInitiated = {}
         )
     }
 }
