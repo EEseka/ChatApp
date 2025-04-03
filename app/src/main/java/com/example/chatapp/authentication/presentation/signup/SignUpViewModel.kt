@@ -1,12 +1,17 @@
 package com.example.chatapp.authentication.presentation.signup
 
-import android.content.Context
+import android.app.Activity
 import android.net.Uri
 import android.util.Log
 import androidx.credentials.CreatePasswordRequest
 import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.CreateCredentialCancellationException
 import androidx.credentials.exceptions.CreateCredentialException
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.R
@@ -23,11 +28,15 @@ import com.example.chatapp.core.domain.util.onError
 import com.example.chatapp.core.domain.util.onSuccess
 import com.example.chatapp.core.domain.validation.ValidateDisplayName
 import com.example.chatapp.core.presentation.util.toStringRes
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 
 class SignUpViewModel(
     private val userAuthUseCase: UserAuthUseCase,
@@ -37,8 +46,7 @@ class SignUpViewModel(
     private val validateDisplayName: ValidateDisplayName,
     private val imageCompressor: ImageCompressor,
     private val fileManager: FileManager,
-    private val authEventBus: AuthEventBus,
-    private val appContext: Context
+    private val authEventBus: AuthEventBus
 ) : ViewModel() {
     private val _state = MutableStateFlow(SignUpState())
     val state = _state.stateIn(
@@ -47,7 +55,8 @@ class SignUpViewModel(
         SignUpState()
     )
     private val isEmailVerified get() = userAuthUseCase.currentUser?.isEmailVerified == true
-    private val credentialManager = CredentialManager.create(appContext)
+    private var activityContextRef: WeakReference<Activity>? = null
+    private var credentialManager: CredentialManager? = null
 
     fun onEvent(event: SignUpEvents) {
         when (event) {
@@ -64,6 +73,7 @@ class SignUpViewModel(
             }
 
             SignUpEvents.OnSignUpClicked -> validateAndSubmit()
+            SignUpEvents.OnSignInWithGoogleClicked -> signInWithGoogle()
             SignUpEvents.OnEmailVerifiedClicked -> checkEmailVerification()
             SignUpEvents.ClearEmailVerificationError -> clearEmailVerificationError()
             is SignUpEvents.OnDisplayNameChanged -> {
@@ -72,6 +82,83 @@ class SignUpViewModel(
 
             is SignUpEvents.OnPhotoSelected -> selectImage(event.uri, event.extension)
             SignUpEvents.OnSaveProfileClicked -> validateAndSaveProfile()
+            SignUpEvents.OnClearActivityContext -> clearActivityContext()
+            is SignUpEvents.OnSetActivityContext -> setActivityContext(event.activityContext)
+        }
+    }
+
+    private fun setActivityContext(activity: Activity) {
+        activityContextRef = WeakReference(activity)
+        credentialManager = CredentialManager.create(activity)
+    }
+
+    private fun clearActivityContext() {
+        activityContextRef?.clear()
+        activityContextRef = null
+        credentialManager = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        clearActivityContext()
+    }
+
+    private fun signInWithGoogle() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            try {
+                val context = activityContextRef?.get() ?: return@launch
+                val googleIdOption = GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(false)
+                    .setServerClientId(context.getString(R.string.default_web_client_id))
+                    .build()
+
+                val request = GetCredentialRequest.Builder()
+                    .addCredentialOption(googleIdOption)
+                    .build()
+
+                val result = credentialManager?.getCredential(
+                    request = request,
+                    context = context
+                ) ?: return@launch
+
+                val credential = result.credential
+                if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    val googleIdTokenCredential =
+                        GoogleIdTokenCredential.createFrom(credential.data)
+                    userAuthUseCase.signInWithGoogle(googleIdTokenCredential.idToken)
+                        .onSuccess {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isEmailVerified = isEmailVerified,
+                                    emailVerificationError = if (!isEmailVerified) R.string.email_not_verified else null
+                                )
+                            }
+                            authEventBus.send(AuthEvent.SignInSuccess)
+                        }
+                        .onError { error ->
+                            _state.update { it.copy(isLoading = false) }
+                            authEventBus.send(AuthEvent.Error(error))
+                        }
+                } else {
+                    _state.update { it.copy(isLoading = false) }
+                    authEventBus.send(AuthEvent.Error(FirebaseError.GOOGLE_SIGN_IN_FAILED))
+                    Log.e(TAG, "Invalid credential type: ${credential.type}")
+                }
+
+            } catch (e: GetCredentialCancellationException) {
+                _state.update { it.copy(isLoading = false) }
+                Log.d(TAG, "User cancelled the sign-in request", e)
+            } catch (e: NoCredentialException) {
+                _state.update { it.copy(isLoading = false) }
+                Log.w(TAG, "No credential found", e)
+            } catch (e: GetCredentialException) {
+                _state.update { it.copy(isLoading = false) }
+                Log.e(TAG, e.message.orEmpty())
+                authEventBus.send(AuthEvent.Error(FirebaseError.GOOGLE_SIGN_IN_FAILED))
+            }
+
         }
     }
 
@@ -110,8 +197,9 @@ class SignUpViewModel(
             userAuthUseCase.createAccount(email, password)
                 .onSuccess {
                     try {
-                        credentialManager.createCredential(
-                            context = appContext,
+                        val context = activityContextRef?.get() ?: return@launch
+                        credentialManager?.createCredential(
+                            context = context,
                             request = CreatePasswordRequest(
                                 id = email,
                                 password = password
@@ -121,7 +209,6 @@ class SignUpViewModel(
                         authEventBus.send(AuthEvent.Error(FirebaseError.CREDENTIAL_CREATION_ERROR))
                         Log.w(TAG, "User cancelled credential creation", e)
                     } catch (e: CreateCredentialException) {
-                        authEventBus.send(AuthEvent.Error(FirebaseError.CREDENTIAL_CREATION_ERROR))
                         Log.e(TAG, "Error creating credential", e)
                     }
                     _state.update { it.copy(isLoading = false) }

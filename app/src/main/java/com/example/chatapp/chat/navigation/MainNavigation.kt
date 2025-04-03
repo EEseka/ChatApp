@@ -144,6 +144,12 @@ fun MainNavigation(
                     onScreenReturn = {
                         settingsViewModel.onEvent(SettingsEvents.OnScreenReturn)
                     },
+                    onSetActivityContext = {
+                        settingsViewModel.onEvent(SettingsEvents.OnSetActivityContext(it))
+                    },
+                    onClearActivityContext = {
+                        settingsViewModel.onEvent(SettingsEvents.OnClearActivityContext)
+                    },
                 )
             }
         }

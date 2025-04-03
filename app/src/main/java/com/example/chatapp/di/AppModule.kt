@@ -6,6 +6,10 @@ import com.example.chatapp.authentication.data.CheckFirstInstallDataSource
 import com.example.chatapp.authentication.data.FirebaseAuthRepositoryImpl
 import com.example.chatapp.authentication.domain.CheckFirstInstallUseCase
 import com.example.chatapp.authentication.domain.UserAuthUseCase
+import com.example.chatapp.authentication.domain.validation.ValidateEmail
+import com.example.chatapp.authentication.domain.validation.ValidatePassword
+import com.example.chatapp.authentication.domain.validation.ValidateRepeatedPassword
+import com.example.chatapp.authentication.domain.validation.ValidateSignInPassword
 import com.example.chatapp.authentication.presentation.AuthEventBus
 import com.example.chatapp.authentication.presentation.signin.SignInViewModel
 import com.example.chatapp.authentication.presentation.signup.SignUpViewModel
@@ -19,10 +23,6 @@ import com.example.chatapp.core.data.ImageCompressorImpl
 import com.example.chatapp.core.domain.FileManager
 import com.example.chatapp.core.domain.ImageCompressor
 import com.example.chatapp.core.domain.validation.ValidateDisplayName
-import com.example.chatapp.authentication.domain.validation.ValidateEmail
-import com.example.chatapp.authentication.domain.validation.ValidatePassword
-import com.example.chatapp.authentication.domain.validation.ValidateRepeatedPassword
-import com.example.chatapp.authentication.domain.validation.ValidateSignInPassword
 import com.google.firebase.auth.FirebaseAuth
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.singleOf

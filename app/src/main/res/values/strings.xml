@@ -115,4 +115,6 @@
     <string name="confirm_to_delete_account">Please confirm your password to delete your account</string>
     <string name="error_credential_creation_error">Error Saving Credential!</string>
     <string name="error_credential_fetching_error">Error Fetching Credential!</string>
+    <string name="error_image_upload_failed">Error occured while uploading image</string>
+    <string name="error_image_delete_failed">Error occured while deleting image</string>
 </resources>

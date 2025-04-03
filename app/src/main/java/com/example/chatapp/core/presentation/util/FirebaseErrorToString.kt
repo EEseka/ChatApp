@@ -32,6 +32,8 @@ fun FirebaseError.toString(context: Context): String {
         FirebaseError.GOOGLE_SIGN_IN_FAILED -> R.string.error_google_sign_in_failed
         FirebaseError.CREDENTIAL_CREATION_ERROR -> R.string.error_credential_creation_error
         FirebaseError.CREDENTIAL_FETCHING_ERROR -> R.string.error_credential_fetching_error
+        FirebaseError.IMAGE_UPLOAD_FAILED -> R.string.error_image_upload_failed
+        FirebaseError.IMAGE_DELETE_FAILED -> R.string.error_image_delete_failed
     }
     return context.getString(resId)
 }

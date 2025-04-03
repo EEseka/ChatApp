@@ -4,9 +4,9 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -86,8 +86,19 @@ fun SettingsScreen(
     onSignOutClicked: () -> Unit,
     onPhotoSelected: (Uri, String) -> Unit,
     onScreenLeave: () -> Unit,
-    onScreenReturn: () -> Unit
+    onScreenReturn: () -> Unit,
+    onSetActivityContext: (ComponentActivity) -> Unit,
+    onClearActivityContext: () -> Unit
 ) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        onSetActivityContext(context as ComponentActivity)
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            onClearActivityContext()
+        }
+    }
     // Editable Name and Pfp State restoration shenanigans
     LaunchedEffect(Unit) {
         onScreenReturn()
@@ -98,7 +109,6 @@ fun SettingsScreen(
         }
     }
     // Permission Shenanigans
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var tempPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
@@ -299,7 +309,6 @@ fun SettingsScreen(
                                 .clip(CircleShape),
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
-                            Log.d("SettingsScreen", "PhotoUri: ${state.photoUri}")
                             if (state.photoUri != null) {
                                 AsyncImage(
                                     model = ImageRequest.Builder(LocalContext.current)
@@ -542,7 +551,9 @@ private fun SettingsScreenPreview() {
             onSignOutClicked = {},
             onPhotoSelected = { uri, extension -> },
             onScreenLeave = {},
-            onScreenReturn = {}
+            onScreenReturn = {},
+            onSetActivityContext = {},
+            onClearActivityContext = {}
         )
     }
 }

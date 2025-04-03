@@ -155,7 +155,13 @@ fun AuthNavigation(
                     }
                 },
                 onContinueWithGoogleClicked = {
-                    signInViewModel.onEvent(SignInEvents.OnSignInWithGoogleClicked)
+                    signUpViewModel.onEvent(SignUpEvents.OnSignInWithGoogleClicked)
+                },
+                onSetActivityContext = {
+                    signUpViewModel.onEvent(SignUpEvents.OnSetActivityContext(it))
+                },
+                onClearActivityContext = {
+                    signUpViewModel.onEvent(SignUpEvents.OnClearActivityContext)
                 }
             )
         }
@@ -240,6 +246,12 @@ fun AuthNavigation(
                 },
                 onAutomaticSignInInitiated = {
                     signInViewModel.onEvent(SignInEvents.OnAutomaticSignInInitiated)
+                },
+                onSetActivityContext = {
+                    signInViewModel.onEvent(SignInEvents.OnSetActivityContext(it))
+                },
+                onClearActivityContext = {
+                    signInViewModel.onEvent(SignInEvents.OnClearActivityContext)
                 }
             )
         }
