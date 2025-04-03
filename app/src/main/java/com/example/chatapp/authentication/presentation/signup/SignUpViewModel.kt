@@ -153,6 +153,7 @@ class SignUpViewModel(
             } catch (e: NoCredentialException) {
                 _state.update { it.copy(isLoading = false) }
                 Log.w(TAG, "No credential found", e)
+                authEventBus.send(AuthEvent.Error(FirebaseError.CREDENTIAL_NOT_FOUND))
             } catch (e: GetCredentialException) {
                 _state.update { it.copy(isLoading = false) }
                 Log.e(TAG, e.message.orEmpty())
@@ -183,6 +184,13 @@ class SignUpViewModel(
                 )
             }
             return
+        }
+        _state.update {
+            it.copy(
+                emailError = null,
+                passwordError = null,
+                repeatedPasswordError = null
+            )
         }
         signUp()
     }
@@ -294,7 +302,7 @@ class SignUpViewModel(
             }
             return
         }
-
+        _state.update { it.copy(displayNameError = null) }
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 

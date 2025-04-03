@@ -34,6 +34,7 @@ fun FirebaseError.toString(context: Context): String {
         FirebaseError.CREDENTIAL_FETCHING_ERROR -> R.string.error_credential_fetching_error
         FirebaseError.IMAGE_UPLOAD_FAILED -> R.string.error_image_upload_failed
         FirebaseError.IMAGE_DELETE_FAILED -> R.string.error_image_delete_failed
+        FirebaseError.CREDENTIAL_NOT_FOUND -> R.string.error_credential_not_found
     }
     return context.getString(resId)
 }

@@ -1,5 +1,7 @@
 [versions]
 agp = "8.9.1"
+cloudinaryAndroid = "3.0.2"
+cloudinaryCore = "1.38.0"
 coil = "2.1.0"
 credentials = "1.5.0"
 datastorePreferences = "1.1.4"
@@ -30,6 +32,8 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 androidx-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-navigation-runtime-ktx = { module = "androidx.navigation:navigation-runtime-ktx", version.ref = "navigationCompose" }
+cloudinary-android = { module = "com.cloudinary:cloudinary-android", version.ref = "cloudinaryAndroid" }
+cloudinary-core = { module = "com.cloudinary:cloudinary-core", version.ref = "cloudinaryCore" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 coil = { module = "io.coil-kt:coil", version.ref = "coil" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }

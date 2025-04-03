@@ -1,10 +1,15 @@
 package com.example.chatapp.chat.data
 
 import android.net.Uri
+import android.util.Log
+import androidx.core.net.toUri
 import com.example.chatapp.chat.domain.UserRepoUseCase
 import com.example.chatapp.core.data.firebase.safeFirebaseCall
+import com.example.chatapp.core.domain.CloudinaryRepoUseCase
 import com.example.chatapp.core.domain.util.FirebaseError
 import com.example.chatapp.core.domain.util.Result
+import com.example.chatapp.core.domain.util.onError
+import com.example.chatapp.core.domain.util.onSuccess
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -19,7 +24,10 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.tasks.await
 
-class UserRepoImpl(private val auth: FirebaseAuth) : UserRepoUseCase {
+class UserRepoImpl(
+    private val auth: FirebaseAuth,
+    private val cloudinaryRepo: CloudinaryRepoUseCase
+) : UserRepoUseCase {
     // StateFlow for observing the current user state
     private val _currentUserFlow: StateFlow<FirebaseUser?> = callbackFlow {
         val authStateListener = FirebaseAuth.AuthStateListener { auth ->
@@ -57,6 +65,15 @@ class UserRepoImpl(private val auth: FirebaseAuth) : UserRepoUseCase {
 
     override suspend fun deleteAccount(): Result<Unit, FirebaseError> =
         safeFirebaseCall {
+            val userId = currentUser?.uid
+            val profileImageUrl = currentUser?.photoUrl.toString()
+
+            if (profileImageUrl.isNotEmpty() && profileImageUrl != "null" && userId != null) {
+                cloudinaryRepo.deleteProfileImage(userId)
+                    .onError { error ->
+                        Log.e(TAG, "Failed to delete profile image from Cloudinary : $error")
+                    }
+            }
             currentUser?.delete()?.await()
         }
 
@@ -65,9 +82,24 @@ class UserRepoImpl(private val auth: FirebaseAuth) : UserRepoUseCase {
         photoUri: Uri?
     ): Result<Unit, FirebaseError> =
         safeFirebaseCall {
+            val userId = currentUser?.uid
+            var finalPhotoUrl: String? = null
+
+            // If we have a new photo URI, upload it to Cloudinary
+            if (photoUri != null && userId != null) {
+                cloudinaryRepo.uploadProfileImage(userId, photoUri)
+                    .onSuccess { secureUrl ->
+                        finalPhotoUrl = secureUrl
+                    }
+                    .onError { error ->
+                        Log.e(TAG, "Failed to upload profile image to Cloudinary : $error")
+                        Result.Error(FirebaseError.IMAGE_UPLOAD_FAILED)
+                    }
+            }
+
             val profileUpdates = userProfileChangeRequest {
                 displayName?.let { this.displayName = it }
-                photoUri?.let { this.photoUri = it }
+                finalPhotoUrl?.let { this.photoUri = it.toUri() }
             }
             currentUser?.updateProfile(profileUpdates)?.await()
             currentUser?.reload()?.await()
@@ -78,4 +110,7 @@ class UserRepoImpl(private val auth: FirebaseAuth) : UserRepoUseCase {
             currentUser?.reauthenticate(credential)?.await()
         }
 
+    companion object {
+        private const val TAG = "UserRepoImpl"
+    }
 }

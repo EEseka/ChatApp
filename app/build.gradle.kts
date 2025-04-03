@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +8,17 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 
     alias(libs.plugins.google.services)
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = project.rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(FileInputStream(localPropertiesFile))
+    }
+}
+
+fun getProperty(key: String, defaultValue: String = ""): String {
+    return localProperties.getProperty(key, defaultValue)
 }
 
 android {
@@ -19,6 +33,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Set API keys for all build variants
+        buildConfigField(
+            "String", "CLOUDINARY_CLOUD_NAME", "\"${getProperty("CLOUDINARY_CLOUD_NAME")}\""
+        )
+        buildConfigField(
+            "String", "CLOUDINARY_API_KEY", "\"${getProperty("CLOUDINARY_API_KEY")}\""
+        )
+        buildConfigField(
+            "String", "CLOUDINARY_API_SECRET", "\"${getProperty("CLOUDINARY_API_SECRET")}\""
+        )
     }
 
     buildTypes {
@@ -31,11 +56,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         buildConfig = true
@@ -68,6 +93,9 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    implementation(libs.cloudinary.android)
+    implementation(libs.cloudinary.core)
 
     testImplementation(libs.junit)
 

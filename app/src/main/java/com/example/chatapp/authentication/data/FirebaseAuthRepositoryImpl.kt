@@ -1,10 +1,15 @@
 package com.example.chatapp.authentication.data
 
 import android.net.Uri
+import android.util.Log
+import androidx.core.net.toUri
 import com.example.chatapp.authentication.domain.UserAuthUseCase
 import com.example.chatapp.core.data.firebase.safeFirebaseCall
+import com.example.chatapp.core.domain.CloudinaryRepoUseCase
 import com.example.chatapp.core.domain.util.FirebaseError
 import com.example.chatapp.core.domain.util.Result
+import com.example.chatapp.core.domain.util.onError
+import com.example.chatapp.core.domain.util.onSuccess
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.auth.FirebaseUser
@@ -23,7 +28,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.tasks.await
 
-class FirebaseAuthRepositoryImpl(private val auth: FirebaseAuth) : UserAuthUseCase {
+class FirebaseAuthRepositoryImpl(
+    private val auth: FirebaseAuth,
+    private val cloudinaryRepo: CloudinaryRepoUseCase
+) : UserAuthUseCase {
     // StateFlow for observing the current user state
     private val _currentUserFlow: StateFlow<FirebaseUser?> = callbackFlow {
         val authStateListener = AuthStateListener { auth ->
@@ -98,10 +106,29 @@ class FirebaseAuthRepositoryImpl(private val auth: FirebaseAuth) : UserAuthUseCa
         photoUri: Uri?
     ): Result<Unit, FirebaseError> =
         safeFirebaseCall {
+            val userId = currentUser?.uid
+            var finalPhotoUrl: String? = null
+
+            // If we have a new photo URI, upload it to Cloudinary
+            if (photoUri != null && userId != null) {
+                cloudinaryRepo.uploadProfileImage(userId, photoUri)
+                    .onSuccess { secureUrl ->
+                        finalPhotoUrl = secureUrl
+                    }
+                    .onError { error ->
+                        Log.e(
+                            "FirebaseAuthRepositoryImpl",
+                            "Failed to upload profile image to Cloudinary : $error"
+                        )
+                        Result.Error(FirebaseError.IMAGE_UPLOAD_FAILED)
+                    }
+            }
+
             val profileUpdates = userProfileChangeRequest {
                 displayName?.let { this.displayName = it }
-                photoUri?.let { this.photoUri = it }
+                finalPhotoUrl?.let { this.photoUri = it.toUri() }
             }
             currentUser?.updateProfile(profileUpdates)?.await()
+            currentUser?.reload()?.await()
         }
 }

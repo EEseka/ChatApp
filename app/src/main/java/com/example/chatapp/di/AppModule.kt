@@ -1,6 +1,5 @@
 package com.example.chatapp.di
 
-import android.content.Context
 import androidx.credentials.CredentialManager
 import com.example.chatapp.authentication.data.CheckFirstInstallDataSource
 import com.example.chatapp.authentication.data.FirebaseAuthRepositoryImpl
@@ -18,8 +17,11 @@ import com.example.chatapp.chat.data.UserRepoImpl
 import com.example.chatapp.chat.domain.UserRepoUseCase
 import com.example.chatapp.chat.presentation.MainEventBus
 import com.example.chatapp.chat.presentation.settings.SettingsViewModel
+import com.example.chatapp.core.data.utils.CloudinaryManager
+import com.example.chatapp.core.data.CloudinaryRepositoryImpl
 import com.example.chatapp.core.data.FileManagerImpl
 import com.example.chatapp.core.data.ImageCompressorImpl
+import com.example.chatapp.core.domain.CloudinaryRepoUseCase
 import com.example.chatapp.core.domain.FileManager
 import com.example.chatapp.core.domain.ImageCompressor
 import com.example.chatapp.core.domain.validation.ValidateDisplayName
@@ -31,6 +33,10 @@ import org.koin.dsl.module
 
 val authModule = module {
     single { FirebaseAuth.getInstance() }
+
+    // Cloudinary
+    single { CloudinaryManager(get()) }
+    singleOf(::CloudinaryRepositoryImpl).bind<CloudinaryRepoUseCase>()
 
     singleOf(::FirebaseAuthRepositoryImpl).bind<UserAuthUseCase>()
     singleOf(::UserRepoImpl).bind<UserRepoUseCase>()
@@ -45,7 +51,7 @@ val authModule = module {
     single { ValidateDisplayName() }
     single { AuthEventBus() }
     single { MainEventBus() }
-    single { CredentialManager.create(get<Context>()) }
+    single { CredentialManager.create(get()) }
 
     viewModelOf(::SignUpViewModel)
     viewModelOf(::SignInViewModel)

@@ -11,6 +11,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -38,6 +39,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedButton
@@ -67,7 +69,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.chatapp.R
 import com.example.chatapp.chat.presentation.components.EditableField
@@ -310,15 +313,25 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
                             if (state.photoUri != null) {
-                                AsyncImage(
+                                val painter = rememberAsyncImagePainter(
                                     model = ImageRequest.Builder(LocalContext.current)
                                         .data(state.photoUri)
                                         .crossfade(true)
-                                        .build(),
-                                    contentDescription = stringResource(R.string.profile_photo),
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
+                                        .build()
                                 )
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    if (painter.state is AsyncImagePainter.State.Loading) {
+                                        LinearProgressIndicator(
+                                            modifier = Modifier.align(Alignment.Center)
+                                        )
+                                    }
+                                    Image(
+                                        painter = painter,
+                                        contentDescription = stringResource(R.string.profile_photo),
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
                             } else {
                                 Icon(
                                     imageVector = Icons.Rounded.Person,

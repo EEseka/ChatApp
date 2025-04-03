@@ -226,6 +226,7 @@ class SignInViewModel(
             } catch (e: NoCredentialException) {
                 _state.update { it.copy(isLoading = false) }
                 Log.w(TAG, "No credential found", e)
+                authEventBus.send(AuthEvent.Error(FirebaseError.CREDENTIAL_NOT_FOUND))
             } catch (e: GetCredentialException) {
                 _state.update { it.copy(isLoading = false) }
                 Log.e(TAG, e.message.orEmpty())
@@ -253,6 +254,7 @@ class SignInViewModel(
             }
             return
         }
+        _state.update { it.copy(emailError = null, passwordError = null) }
         signIn()
     }
 
@@ -325,6 +327,7 @@ class SignInViewModel(
             }
             return
         }
+        _state.update { it.copy(forgotPasswordEmailError = null) }
         sendPasswordReset()
     }
 
