@@ -44,6 +44,9 @@ android {
         buildConfigField(
             "String", "CLOUDINARY_API_SECRET", "\"${getProperty("CLOUDINARY_API_SECRET")}\""
         )
+        buildConfigField(
+            "String", "DEEPSEEK_API_KEY", "\"${getProperty("DEEPSEEK_API_KEY")}\""
+        )
     }
 
     buildTypes {
@@ -96,6 +99,9 @@ dependencies {
 
     implementation(libs.cloudinary.android)
     implementation(libs.cloudinary.core)
+
+    // Image Cropper
+    implementation(libs.easycrop)
 
     testImplementation(libs.junit)
 

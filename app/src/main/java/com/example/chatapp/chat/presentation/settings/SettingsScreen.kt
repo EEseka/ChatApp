@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -24,8 +25,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.automirrored.rounded.Logout
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.CameraAlt
@@ -34,11 +38,13 @@ import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
@@ -47,6 +53,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -76,7 +83,13 @@ import com.example.chatapp.R
 import com.example.chatapp.chat.presentation.components.EditableField
 import com.example.chatapp.chat.presentation.components.PhotoActionButton
 import com.example.chatapp.core.domain.util.createTempPhotoUri
+import com.example.chatapp.core.domain.util.toUri
 import com.example.chatapp.ui.theme.ChatAppTheme
+import com.mr0xf00.easycrop.CropError
+import com.mr0xf00.easycrop.CropResult
+import com.mr0xf00.easycrop.crop
+import com.mr0xf00.easycrop.rememberImageCropper
+import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,9 +124,11 @@ fun SettingsScreen(
             onScreenLeave()
         }
     }
-    // Permission Shenanigans
+
     val scope = rememberCoroutineScope()
     var tempPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    val imageCropper = rememberImageCropper()
+    var isCropping by rememberSaveable { mutableStateOf(false) }
 
     var cameraPermissionRequested by rememberSaveable { mutableStateOf(false) }
     var galleryPermissionRequested by rememberSaveable { mutableStateOf(false) }
@@ -128,6 +143,29 @@ fun SettingsScreen(
         cameraPermissionRequested = false
 
         if (success && tempPhotoUri != null) {
+            // Crop Image
+            isCropping = true
+            scope.launch {
+                val result = imageCropper.crop(tempPhotoUri!!, context)
+                when (result) {
+                    CropResult.Cancelled -> {
+                        isCropping = false
+                    }
+
+                    is CropError -> {
+                        isCropping = false
+                        Log.e("ProfileSetupScreen", "Error cropping image: $result")
+                    }
+
+                    is CropResult.Success -> {
+                        isCropping = false
+                        val croppedUri = result.bitmap.toUri(context, tempPhotoUri)
+                        if (croppedUri != null) {
+                            tempPhotoUri = croppedUri
+                        }
+                    }
+                }
+            }
             val mimeType = context.contentResolver.getType(tempPhotoUri!!)
             val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
             if (extension != null) {
@@ -293,6 +331,38 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
+            val cropState = imageCropper.cropState
+            if (isCropping && cropState != null) {
+                ImageCropperDialog(
+                    state = cropState,
+                    topBar = {
+                        CenterAlignedTopAppBar(
+                            title = { Text(stringResource(R.string.crop_image)) },
+                            navigationIcon = {
+                                IconButton(onClick = { cropState.done(accept = false) }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                                }
+                            },
+                            actions = {
+                                IconButton(onClick = { cropState.reset() }) {
+                                    Icon(Icons.Default.Restore, null)
+                                }
+                                IconButton(
+                                    onClick = { cropState.done(accept = true) },
+                                    enabled = !cropState.accepted
+                                ) {
+                                    Icon(Icons.Default.Done, null)
+                                }
+                            },
+                            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                    }
+                )
+            }
             // Profile Section
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),

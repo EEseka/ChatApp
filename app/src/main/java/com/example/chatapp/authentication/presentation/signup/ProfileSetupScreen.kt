@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,18 +25,25 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Person2
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,9 +69,16 @@ import coil.request.ImageRequest
 import com.example.chatapp.R
 import com.example.chatapp.authentication.presentation.components.PhotoActionButton
 import com.example.chatapp.core.domain.util.createTempPhotoUri
+import com.example.chatapp.core.domain.util.toUri
 import com.example.chatapp.ui.theme.ChatAppTheme
+import com.mr0xf00.easycrop.CropError
+import com.mr0xf00.easycrop.CropResult
+import com.mr0xf00.easycrop.crop
+import com.mr0xf00.easycrop.rememberImageCropper
+import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileSetupScreen(
     state: SignUpState,
@@ -76,6 +91,8 @@ fun ProfileSetupScreen(
     val focusManager = LocalFocusManager.current
 
     var tempPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    val imageCropper = rememberImageCropper()
+    var isCropping by rememberSaveable { mutableStateOf(false) }
 
     var cameraPermissionRequested by rememberSaveable { mutableStateOf(false) }
     var galleryPermissionRequested by rememberSaveable { mutableStateOf(false) }
@@ -90,6 +107,29 @@ fun ProfileSetupScreen(
         cameraPermissionRequested = false
 
         if (success && tempPhotoUri != null) {
+            // Crop Image
+            isCropping = true
+            scope.launch {
+                val result = imageCropper.crop(tempPhotoUri!!, context)
+                when (result) {
+                    CropResult.Cancelled -> {
+                        isCropping = false
+                    }
+
+                    is CropError -> {
+                        isCropping = false
+                        Log.e("ProfileSetupScreen", "Error cropping image: $result")
+                    }
+
+                    is CropResult.Success -> {
+                        isCropping = false
+                        val croppedUri = result.bitmap.toUri(context, tempPhotoUri)
+                        if (croppedUri != null) {
+                            tempPhotoUri = croppedUri
+                        }
+                    }
+                }
+            }
             val mimeType = context.contentResolver.getType(tempPhotoUri!!)
             val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
             if (extension != null) {
@@ -233,6 +273,39 @@ fun ProfileSetupScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        val cropState = imageCropper.cropState
+        if (isCropping && cropState != null) {
+            ImageCropperDialog(
+                state = cropState,
+                topBar = {
+                    CenterAlignedTopAppBar(
+                        title = { Text(stringResource(R.string.crop_image)) },
+                        navigationIcon = {
+                            IconButton(onClick = { cropState.done(accept = false) }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = { cropState.reset() }) {
+                                Icon(Icons.Default.Restore, null)
+                            }
+                            IconButton(
+                                onClick = { cropState.done(accept = true) },
+                                enabled = !cropState.accepted
+                            ) {
+                                Icon(Icons.Default.Done, null)
+                            }
+                        },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                }
+            )
+        }
+
         Text(
             text = stringResource(R.string.setup_your_profile),
             style = MaterialTheme.typography.headlineMedium,

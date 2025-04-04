@@ -118,4 +118,5 @@
     <string name="error_image_upload_failed">Error occured while uploading image</string>
     <string name="error_image_delete_failed">Error occured while deleting image</string>
     <string name="error_credential_not_found">No credential found, ensure you have a google account on your device</string>
+    <string name="crop_image">Crop Image</string>
 </resources>
