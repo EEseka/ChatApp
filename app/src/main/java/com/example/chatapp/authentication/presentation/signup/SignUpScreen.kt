@@ -1,5 +1,7 @@
 package com.example.chatapp.authentication.presentation.signup
 
+import android.content.res.Configuration
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -45,8 +49,21 @@ fun SignUpScreen(
     onRepeatedPasswordValueChange: (String) -> Unit,
     onSignUpClicked: () -> Unit,
     onNavigateToSignIn: () -> Unit,
-    onContinueWithGoogleClicked: () -> Unit
+    onContinueWithGoogleClicked: () -> Unit,
+    onSetActivityContext: (ComponentActivity) -> Unit,
+    onClearActivityContext: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        onSetActivityContext(context as ComponentActivity)
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            onClearActivityContext()
+        }
+    }
+
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var repeatedPasswordVisible by rememberSaveable { mutableStateOf(false) }
 
@@ -184,7 +201,7 @@ fun SignUpScreen(
 
 @Preview(
     showBackground = true, backgroundColor = 0xFF000000, showSystemUi = true,
-    uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES or android.content.res.Configuration.UI_MODE_TYPE_NORMAL
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
 )
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -197,7 +214,9 @@ private fun SignUpScreenPreview() {
             onRepeatedPasswordValueChange = {},
             onSignUpClicked = {},
             onNavigateToSignIn = {},
-            onContinueWithGoogleClicked = {}
+            onContinueWithGoogleClicked = {},
+            onSetActivityContext = {},
+            onClearActivityContext = {}
         )
     }
 }

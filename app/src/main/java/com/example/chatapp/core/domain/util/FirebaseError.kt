@@ -1,6 +1,6 @@
 package com.example.chatapp.core.domain.util
 
-enum class FirebaseError : Error {
+enum class FirebaseAuthError : Error {
     INVALID_EMAIL,
     USER_NOT_FOUND,
     WRONG_PASSWORD,
@@ -26,5 +26,44 @@ enum class FirebaseError : Error {
     FAILED_REAUTHENTICATION,
     CREDENTIAL_CREATION_ERROR,
     CREDENTIAL_FETCHING_ERROR,
+    CREDENTIAL_NOT_FOUND,
+    IMAGE_UPLOAD_FAILED,
+    IMAGE_DELETE_FAILED,
     UNKNOWN
 }
+
+enum class FirebaseFirestoreError : Error {
+    CANCELLED,
+    UNKNOWN,
+    INVALID_ARGUMENT,
+    NETWORK_ERROR,
+    DEADLINE_EXCEEDED,
+    NOT_FOUND,
+    ALREADY_EXISTS,
+    PERMISSION_DENIED,
+    RESOURCE_EXHAUSTED,
+    FAILED_PRECONDITION,
+    ABORTED,
+    OUT_OF_RANGE,
+    UNIMPLEMENTED,
+    INTERNAL,
+    UNAVAILABLE,
+    DATA_LOSS,
+    UNAUTHENTICATED
+}
+
+enum class FirebaseStorageError : Error {
+    UNKNOWN,
+    OBJECT_NOT_FOUND,
+    BUCKET_NOT_FOUND,
+    PROJECT_NOT_FOUND,
+    QUOTA_EXCEEDED,
+    NOT_AUTHENTICATED,
+    NOT_AUTHORIZED,
+    RETRY_LIMIT_EXCEEDED,
+    INVALID_CHECKSUM,
+    CANCELED,
+    NETWORK_ERROR,
+    IO_ERROR
+}
+

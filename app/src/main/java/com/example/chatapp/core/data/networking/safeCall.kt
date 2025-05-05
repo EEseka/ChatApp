@@ -19,7 +19,5 @@ suspend inline fun <reified T> safeCall(execute: () -> HttpResponse): Result<T, 
         coroutineContext.ensureActive() // Avoids cancelled coroutines from being caught and not propagated up
         return Result.Error(NetworkError.UNKNOWN)
     }
-
     return responseToResult(response)
 }
-// Checks for errors while fetching the response and then calls line 23 whose function checks for errors after the response is fetched

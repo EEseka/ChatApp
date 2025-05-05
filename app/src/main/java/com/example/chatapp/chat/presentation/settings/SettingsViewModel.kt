@@ -1,15 +1,17 @@
 package com.example.chatapp.chat.presentation.settings
 
-import android.content.Context
+import android.app.Activity
 import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetPasswordOption
 import androidx.credentials.PasswordCredential
+import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
@@ -19,9 +21,9 @@ import com.example.chatapp.R
 import com.example.chatapp.chat.domain.UserRepoUseCase
 import com.example.chatapp.chat.presentation.MainEvent
 import com.example.chatapp.chat.presentation.MainEventBus
-import com.example.chatapp.core.domain.FileManager
-import com.example.chatapp.core.domain.ImageCompressor
-import com.example.chatapp.core.domain.util.FirebaseError
+import com.example.chatapp.core.domain.utils.FileManager
+import com.example.chatapp.core.domain.utils.ImageCompressor
+import com.example.chatapp.core.domain.util.FirebaseAuthError
 import com.example.chatapp.core.domain.util.onError
 import com.example.chatapp.core.domain.util.onSuccess
 import com.example.chatapp.core.domain.validation.ValidateDisplayName
@@ -38,15 +40,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
+import java.lang.ref.WeakReference
 
 class SettingsViewModel(
     private val userRepoUseCase: UserRepoUseCase,
     private val imageCompressor: ImageCompressor,
     private val fileManager: FileManager,
     private val validateDisplayName: ValidateDisplayName,
-    private val mainEventBus: MainEventBus,
-    private val appContext: Context
+    private val mainEventBus: MainEventBus
 ) : ViewModel() {
     private val user = userRepoUseCase.currentUser
 
@@ -81,7 +82,8 @@ class SettingsViewModel(
             photoUri = user?.photoUrl
         )
     )
-    private val credentialManager = CredentialManager.create(appContext)
+    private var activityContextRef: WeakReference<Activity>? = null
+    private var credentialManager: CredentialManager? = null
 
     fun onEvent(event: SettingsEvents) {
         when (event) {
@@ -97,7 +99,25 @@ class SettingsViewModel(
             SettingsEvents.OnUpdateProfileClicked -> validateAndUpdateProfile()
             SettingsEvents.OnScreenLeave -> preserveTemporaryState()
             SettingsEvents.OnScreenReturn -> restoreTemporaryState()
+            SettingsEvents.OnClearActivityContext -> clearActivityContext()
+            is SettingsEvents.OnSetActivityContext -> setActivityContext(event.activityContext)
         }
+    }
+
+    private fun setActivityContext(activity: Activity) {
+        activityContextRef = WeakReference(activity)
+        credentialManager = CredentialManager.create(activity)
+    }
+
+    private fun clearActivityContext() {
+        activityContextRef?.clear()
+        activityContextRef = null
+        credentialManager = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        clearActivityContext()
     }
 
     private fun preserveTemporaryState() {
@@ -198,7 +218,7 @@ class SettingsViewModel(
                 mainEventBus.send(MainEvent.ProfileUpdateComplete)
             }.onError { error ->
                 _state.update { it.copy(isProfileUpdating = false) }
-                mainEventBus.send(MainEvent.Error(error))
+                mainEventBus.send(MainEvent.AuthError(error))
             }
         }
     }
@@ -214,7 +234,7 @@ class SettingsViewModel(
                 }
                 .onError { error ->
                     _state.update { it.copy(isSigningOut = false) }
-                    mainEventBus.send(MainEvent.Error(error))
+                    mainEventBus.send(MainEvent.AuthError(error))
                 }
         }
     }
@@ -225,7 +245,7 @@ class SettingsViewModel(
 
             if (user == null) {
                 _state.update { it.copy(isDeletingAccount = false) }
-                mainEventBus.send(MainEvent.Error(FirebaseError.USER_NOT_FOUND))
+                mainEventBus.send(MainEvent.AuthError(FirebaseAuthError.USER_NOT_FOUND))
                 return@launch
             }
 
@@ -243,7 +263,7 @@ class SettingsViewModel(
                     reAuthenticateAndDeleteAccount()
                 } else {
                     _state.update { it.copy(isDeletingAccount = false) }
-                    mainEventBus.send(MainEvent.Error(FirebaseError.UNKNOWN))
+                    mainEventBus.send(MainEvent.AuthError(FirebaseAuthError.UNKNOWN))
                     Log.e(
                         TAG,
                         "Unsupported provider. Available providers: ${providerData.map { it.providerId }}"
@@ -251,7 +271,7 @@ class SettingsViewModel(
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isDeletingAccount = false) }
-                mainEventBus.send(MainEvent.Error(FirebaseError.FAILED_REAUTHENTICATION))
+                mainEventBus.send(MainEvent.AuthError(FirebaseAuthError.FAILED_REAUTHENTICATION))
                 Log.e(TAG, "Failed to re-authenticate user", e)
             }
         }
@@ -260,6 +280,7 @@ class SettingsViewModel(
     private fun reAuthenticateAndDeleteAccount() {
         viewModelScope.launch {
             try {
+                val context = activityContextRef?.get() ?: return@launch
                 // Get available providers
                 val providerData = user?.providerData ?: emptyList()
                 val hasEmailProvider =
@@ -279,15 +300,15 @@ class SettingsViewModel(
                 if (hasGoogleProvider) {
                     val googleIdOption = GetGoogleIdOption.Builder()
                         .setFilterByAuthorizedAccounts(true)
-                        .setServerClientId(appContext.getString(R.string.default_web_client_id))
+                        .setServerClientId(context.getString(R.string.default_web_client_id))
                         .build()
                     request.addCredentialOption(googleIdOption)
                 }
 
-                val credentialResponse = credentialManager.getCredential(
-                    context = appContext,
+                val credentialResponse = credentialManager?.getCredential(
+                    context = context,
                     request = request.build()
-                )
+                ) ?: return@launch
 
                 when (val credential = credentialResponse.credential) {
                     is PasswordCredential -> {
@@ -310,14 +331,14 @@ class SettingsViewModel(
                             completeReauthenticationAndDeletion(authCredential)
                         } else {
                             _state.update { it.copy(isDeletingAccount = false) }
-                            mainEventBus.send(MainEvent.Error(FirebaseError.FAILED_REAUTHENTICATION))
+                            mainEventBus.send(MainEvent.AuthError(FirebaseAuthError.FAILED_REAUTHENTICATION))
                             Log.e(TAG, "Unknown credential type: ${credential.type}")
                         }
                     }
 
                     else -> {
                         _state.update { it.copy(isDeletingAccount = false) }
-                        mainEventBus.send(MainEvent.Error(FirebaseError.FAILED_REAUTHENTICATION))
+                        mainEventBus.send(MainEvent.AuthError(FirebaseAuthError.FAILED_REAUTHENTICATION))
                         Log.e(TAG, "Unsupported credential type")
                     }
                 }
@@ -327,23 +348,15 @@ class SettingsViewModel(
             } catch (e: NoCredentialException) {
                 // User did not save to credential Manager but we can still delete account provided they recently signed in
                 Log.d(TAG, "No credential found", e)
-                userRepoUseCase.deleteAccount()
-                    .onSuccess {
-                        _state.update { it.copy(isDeletingAccount = false) }
-                        mainEventBus.send(MainEvent.AccountDeletionComplete)
-                    }
-                    .onError { error ->
-                        _state.update { it.copy(isDeletingAccount = false) }
-                        mainEventBus.send(MainEvent.Error(error))
-                    }
+                deleteAccountWithoutReAuth()
             } catch (e: GetCredentialException) {
-                _state.update { it.copy(isDeletingAccount = false) }
-                Log.e(TAG, "Error getting credential", e)
-                mainEventBus.send(MainEvent.Error(FirebaseError.FAILED_REAUTHENTICATION))
+                // User does not have any credential set up on his device yet but we can still delete account provided they recently signed in
+                Log.e(TAG, "AuthError getting credential", e)
+                deleteAccountWithoutReAuth()
             } catch (e: Exception) {
                 _state.update { it.copy(isDeletingAccount = false) }
                 Log.e(TAG, "Re-authentication error", e)
-                mainEventBus.send(MainEvent.Error(FirebaseError.FAILED_REAUTHENTICATION))
+                mainEventBus.send(MainEvent.AuthError(FirebaseAuthError.FAILED_REAUTHENTICATION))
             }
         }
     }
@@ -353,17 +366,37 @@ class SettingsViewModel(
             .onSuccess {
                 userRepoUseCase.deleteAccount()
                     .onSuccess {
+                        try {
+                            credentialManager?.clearCredentialState(ClearCredentialStateRequest())
+                                ?: return
+                        } catch (e: ClearCredentialException) {
+                            Log.e(TAG, "Failed to clear credential state", e)
+                        }
                         _state.update { it.copy(isDeletingAccount = false) }
                         mainEventBus.send(MainEvent.AccountDeletionComplete)
                     }
                     .onError { error ->
                         _state.update { it.copy(isDeletingAccount = false) }
-                        mainEventBus.send(MainEvent.Error(error))
+                        mainEventBus.send(MainEvent.AuthError(error))
                     }
             }
             .onError { error ->
                 _state.update { it.copy(isDeletingAccount = false) }
-                mainEventBus.send(MainEvent.Error(error))
+                mainEventBus.send(MainEvent.AuthError(error))
+            }
+    }
+
+    // Useful for users without credential manager.
+    // We let firebase handle it by requiring recent sign in
+    private suspend fun deleteAccountWithoutReAuth() {
+        userRepoUseCase.deleteAccount()
+            .onSuccess {
+                _state.update { it.copy(isDeletingAccount = false) }
+                mainEventBus.send(MainEvent.AccountDeletionComplete)
+            }
+            .onError { error ->
+                _state.update { it.copy(isDeletingAccount = false) }
+                mainEventBus.send(MainEvent.AuthError(error))
             }
     }
 

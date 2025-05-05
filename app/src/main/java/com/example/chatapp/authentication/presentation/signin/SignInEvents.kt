@@ -1,5 +1,7 @@
 package com.example.chatapp.authentication.presentation.signin
 
+import android.app.Activity
+
 sealed interface SignInEvents {
     data class OnEmailChanged(val email: String) : SignInEvents
     data class OnPasswordChanged(val password: String) : SignInEvents
@@ -13,4 +15,6 @@ sealed interface SignInEvents {
     data object ClearForgotPasswordEmailSent : SignInEvents
     data object OnSendPasswordResetClicked : SignInEvents
     data object OnAutomaticSignInInitiated : SignInEvents
+    data class OnSetActivityContext(val activityContext: Activity) : SignInEvents
+    data object OnClearActivityContext : SignInEvents
 }

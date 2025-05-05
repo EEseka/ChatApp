@@ -115,7 +115,7 @@ fun EmailVerificationScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        // Error message display
+        // AuthError message display
         AnimatedVisibility(
             visible = state.emailVerificationError != null,
             enter = fadeIn(),

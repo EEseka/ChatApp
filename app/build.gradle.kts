@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +8,18 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 
     alias(libs.plugins.google.services)
+    id("com.google.devtools.ksp")
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = project.rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(FileInputStream(localPropertiesFile))
+    }
+}
+
+fun getProperty(key: String, defaultValue: String = ""): String {
+    return localProperties.getProperty(key, defaultValue)
 }
 
 android {
@@ -19,6 +34,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Set API keys for all build variants
+        buildConfigField(
+            "String", "OPENAI_API_KEY", "\"${getProperty("OPENAI_API_KEY")}\""
+        )
+        buildConfigField(
+            "String", "GEMINI_API_KEY", "\"${getProperty("GEMINI_API_KEY")}\""
+        )
     }
 
     buildTypes {
@@ -31,11 +54,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         buildConfig = true
@@ -58,15 +81,32 @@ dependencies {
 
     implementation(libs.bundles.ktor)
 
+    // Room
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.gson) // For Type Converters
+
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
+    implementation(libs.generativeai)
 
     // Google sign in with firebase
     implementation(libs.play.services.auth)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    // OpenAI API Kotlin client integration using BOM
+    implementation(platform("com.aallam.openai:openai-client-bom:4.0.1"))
+    implementation("com.aallam.openai:openai-client")
+    runtimeOnly("io.ktor:ktor-client-okhttp")
+
+    // Image Cropper
+    implementation(libs.easycrop)
 
     testImplementation(libs.junit)
 

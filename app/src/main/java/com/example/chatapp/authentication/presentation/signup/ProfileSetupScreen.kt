@@ -1,19 +1,12 @@
 package com.example.chatapp.authentication.presentation.signup
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
-import android.os.Build
-import android.webkit.MimeTypeMap
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,20 +17,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Person2
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,15 +54,16 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.chatapp.R
 import com.example.chatapp.authentication.presentation.components.PhotoActionButton
-import com.example.chatapp.core.domain.util.createTempPhotoUri
+import com.example.chatapp.core.presentation.CameraAndGalleryPermissionHandler
 import com.example.chatapp.ui.theme.ChatAppTheme
-import kotlinx.coroutines.launch
+import com.mr0xf00.easycrop.rememberImageCropper
+import com.mr0xf00.easycrop.ui.ImageCropperDialog
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileSetupScreen(
     state: SignUpState,
@@ -75,156 +75,25 @@ fun ProfileSetupScreen(
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
 
-    var tempPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    val imageCropper = rememberImageCropper()
+    var isCropping by rememberSaveable { mutableStateOf(false) }
 
-    var cameraPermissionRequested by rememberSaveable { mutableStateOf(false) }
-    var galleryPermissionRequested by rememberSaveable { mutableStateOf(false) }
+    var checkAndLaunchCamera by rememberSaveable { mutableStateOf(false) }
+    var checkAndLaunchGallery by rememberSaveable { mutableStateOf(false) }
 
-    var cameraPermissionGranted by rememberSaveable { mutableStateOf(false) }
-    var galleryPermissionGranted by rememberSaveable { mutableStateOf(false) }
-
-    // Camera launcher
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
-    ) { success ->
-        cameraPermissionRequested = false
-
-        if (success && tempPhotoUri != null) {
-            val mimeType = context.contentResolver.getType(tempPhotoUri!!)
-            val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
-            if (extension != null) {
-                onPhotoSelected(tempPhotoUri!!, extension)
-            }
+    CameraAndGalleryPermissionHandler(
+        context = context,
+        scope = scope,
+        imageCropper = imageCropper,
+        checkAndLaunchCamera = checkAndLaunchCamera,
+        checkAndLaunchGallery = checkAndLaunchGallery,
+        changeCheckAndLaunchCamera = { checkAndLaunchCamera = it },
+        changeCheckAndLaunchGallery = { checkAndLaunchGallery = it },
+        changeIsCropping = { isCropping = it },
+        onPhotoSelected = { uri, extension ->
+            onPhotoSelected(uri, extension)
         }
-    }
-
-    // Gallery launcher
-    val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { contentUri ->
-        galleryPermissionRequested = false
-
-        contentUri?.let { uri ->
-            val mimeType = context.contentResolver.getType(uri)
-            val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
-            if (extension != null) {
-                onPhotoSelected(uri, extension)
-            }
-        }
-    }
-
-    fun checkAndLaunchCamera() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            cameraPermissionGranted = true
-            scope.launch {
-                tempPhotoUri = context.createTempPhotoUri()
-                tempPhotoUri?.let { uri -> cameraLauncher.launch(uri) }
-            }
-        } else {
-            cameraPermissionRequested = true
-        }
-    }
-
-    fun checkAndLaunchGallery() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // No need to request READ_MEDIA_IMAGES permission; just launch the photo picker
-            galleryLauncher.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-            )
-        } else {
-            val readPermission = Manifest.permission.READ_EXTERNAL_STORAGE
-
-            if (ContextCompat.checkSelfPermission(context, readPermission) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                galleryPermissionGranted = true
-                galleryLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                )
-            } else {
-                galleryPermissionRequested = true
-            }
-        }
-    }
-
-    // Permission handler for camera and gallery
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        // Handle camera permission result
-        permissions[Manifest.permission.CAMERA]?.let { granted ->
-            if (granted) {
-                cameraPermissionGranted = true
-                if (cameraPermissionRequested) {
-                    scope.launch {
-                        tempPhotoUri = context.createTempPhotoUri()
-                        tempPhotoUri?.let { uri -> cameraLauncher.launch(uri) }
-                    }
-                }
-            } else if (cameraPermissionRequested) {
-                // Reset the flag even if permission is denied
-                cameraPermissionRequested = false
-
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.camera_permission_denied),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-
-        // Handle gallery permission result
-        val galleryPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions[Manifest.permission.READ_MEDIA_IMAGES]
-        } else {
-            permissions[Manifest.permission.READ_EXTERNAL_STORAGE]
-        }
-
-        galleryPermission?.let { granted ->
-            if (granted) {
-                galleryPermissionGranted = true
-                if (galleryPermissionRequested) {
-                    galleryLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                }
-            } else if (galleryPermissionRequested) {
-                // Reset the flag even if permission is denied
-                galleryPermissionRequested = false
-
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.gallery_permission_denied),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-    }
-
-    // Permission Request Trigger
-    LaunchedEffect(cameraPermissionRequested, galleryPermissionRequested) {
-        if (cameraPermissionRequested || galleryPermissionRequested) {
-            val permissions = mutableListOf<String>()
-
-            if (cameraPermissionRequested) {
-                permissions.add(Manifest.permission.CAMERA)
-            }
-
-            if (galleryPermissionRequested) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
-                } else {
-                    permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-                }
-            }
-
-            if (permissions.isNotEmpty()) {
-                permissionLauncher.launch(permissions.toTypedArray())
-            }
-        }
-    }
+    )
 
     Column(
         modifier = Modifier
@@ -233,6 +102,40 @@ fun ProfileSetupScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        val cropState = imageCropper.cropState
+        if (isCropping && cropState != null) {
+            ImageCropperDialog(
+                state = cropState,
+                topBar = {
+                    CenterAlignedTopAppBar(
+                        title = { Text(stringResource(R.string.crop_image)) },
+                        navigationIcon = {
+                            IconButton(onClick = { cropState.done(accept = false) }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = { cropState.reset() }) {
+                                Icon(Icons.Default.Restore, null)
+                            }
+                            IconButton(
+                                onClick = { cropState.done(accept = true) },
+                                enabled = !cropState.accepted
+                            ) {
+                                Icon(Icons.Default.Done, null)
+                            }
+                        },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                    )
+                },
+                dialogPadding = PaddingValues(0.dp)
+            )
+        }
+
         Text(
             text = stringResource(R.string.setup_your_profile),
             style = MaterialTheme.typography.headlineMedium,
@@ -275,7 +178,7 @@ fun ProfileSetupScreen(
             PhotoActionButton(
                 icon = Icons.Rounded.CameraAlt,
                 contentDescription = stringResource(R.string.take_photo),
-                onClick = { checkAndLaunchCamera() },
+                onClick = { checkAndLaunchCamera = true },
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(start = 8.dp)
@@ -284,7 +187,7 @@ fun ProfileSetupScreen(
             PhotoActionButton(
                 icon = Icons.Rounded.AddPhotoAlternate,
                 contentDescription = stringResource(R.string.choose_from_gallery),
-                onClick = { checkAndLaunchGallery() },
+                onClick = { checkAndLaunchGallery = true },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 8.dp)

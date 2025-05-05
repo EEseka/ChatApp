@@ -43,45 +43,47 @@ fun EditableField(
     onSaveClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (isEditing) {
-            TextField(
-                value = value,
-                label = { Text(text = label) },
-                onValueChange = { onValueChange(it) },
-                isError = isError,
-                supportingText = {
-                    supportingText?.let {
-                        Text(
-                            text = stringResource(it),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        onSaveClick
-                        focusManager.clearFocus()
-                    }
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .focusRequester(focusRequester)
-            )
-            IconButton(onClick = onSaveClick) {
-                Icon(
-                    imageVector = Icons.Rounded.Check,
-                    contentDescription = stringResource(R.string.save)
-                )
-            }
-        } else {
+    if (isEditing) {
+        TextField(
+            value = value,
+            label = { Text(text = label) },
+            onValueChange = { onValueChange(it) },
+            isError = isError,
+            supportingText = {
+                supportingText?.let {
+                    Text(
+                        text = stringResource(it),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    onSaveClick
+                    focusManager.clearFocus()
+                }
+            ),
+            trailingIcon = {
+                IconButton(onClick = onSaveClick) {
+                    Icon(
+                        imageVector = Icons.Rounded.Check,
+                        contentDescription = stringResource(R.string.save)
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+        )
+    } else {
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 text = value.text,
                 style = MaterialTheme.typography.bodyLarge,

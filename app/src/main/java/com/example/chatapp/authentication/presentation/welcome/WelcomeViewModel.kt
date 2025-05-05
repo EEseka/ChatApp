@@ -7,7 +7,7 @@ import com.example.chatapp.authentication.domain.CheckFirstInstallUseCase
 import com.example.chatapp.authentication.domain.UserAuthUseCase
 import com.example.chatapp.authentication.presentation.AuthEvent
 import com.example.chatapp.authentication.presentation.AuthEventBus
-import com.example.chatapp.core.domain.util.FirebaseError
+import com.example.chatapp.core.domain.util.FirebaseAuthError
 import com.example.chatapp.core.domain.util.onError
 import com.example.chatapp.core.domain.util.onSuccess
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -76,7 +76,7 @@ class WelcomeViewModel(
         Log.e(TAG, "Unexpected error in authentication flow", exception)
         viewModelScope.launch {
             _uiState.update { WelcomeUiState.Error }
-            authEventBus.send(AuthEvent.Error(FirebaseError.UNKNOWN))
+            authEventBus.send(AuthEvent.Error(FirebaseAuthError.UNKNOWN))
         }
     }
 

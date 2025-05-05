@@ -1,26 +1,30 @@
 [versions]
-agp = "8.9.1"
+agp = "8.9.2"
 coil = "2.1.0"
 credentials = "1.5.0"
-datastorePreferences = "1.1.4"
-firebaseBom = "33.11.0"
+datastorePreferences = "1.1.0"
+generativeai = "0.9.0"
+easycrop = "0.1.1"
+firebaseBom = "33.13.0"
 googleid = "1.1.1"
-kotlin = "2.0.20"
+gson = "2.10.1"
+kotlin = "2.0.21"
 google = "4.4.2"
-coreKtx = "1.15.0"
+coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
-composeBom = "2025.03.01"
+composeBom = "2025.04.01"
 desugar-jdk-libs = "2.1.5"
-ktor = "2.3.12"
+ktor = "3.0.0"
 koin = "3.5.6"
 material3-adaptive = "1.1.0"
 compose-material-icons-extended = "1.7.8"
 navigationCompose = "2.8.9"
 playServicesAuth = "21.3.0"
+room = "2.7.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,12 +34,20 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 androidx-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-navigation-runtime-ktx = { module = "androidx.navigation:navigation-runtime-ktx", version.ref = "navigationCompose" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 coil = { module = "io.coil-kt:coil", version.ref = "coil" }
+generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+easycrop = { module = "io.github.mr0xf00:easycrop", version.ref = "easycrop" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }
 firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore-ktx" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

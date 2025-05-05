@@ -1,7 +1,7 @@
 package com.example.chatapp
 
 import android.app.Application
-import com.example.chatapp.di.authModule
+import com.example.chatapp.di.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -14,8 +14,7 @@ class ChatAppApplication : Application() {
         startKoin {
             androidContext(this@ChatAppApplication)
             androidLogger(level = Level.ERROR)
-
-            modules(authModule)
+            modules(appModule)
         }
     }
 }

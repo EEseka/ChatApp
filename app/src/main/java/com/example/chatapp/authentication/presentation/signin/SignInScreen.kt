@@ -1,6 +1,7 @@
 package com.example.chatapp.authentication.presentation.signin
 
 import android.content.res.Configuration
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -52,11 +55,20 @@ fun SignInScreen(
     onDismissForgotPasswordDialog: () -> Unit,
     onNavigateToResetPasswordEmail: () -> Unit,
     onContinueWithGoogleClicked: () -> Unit,
-    onAutomaticSignInInitiated: () -> Unit
+    onAutomaticSignInInitiated: () -> Unit,
+    onSetActivityContext: (ComponentActivity) -> Unit,
+    onClearActivityContext: () -> Unit
 ) {
-    // Try Signing in automatically using Credential Manager
+    val context = LocalContext.current
+    // Try Signing in automatically using Credential Manager after setting the activity context
     LaunchedEffect(Unit) {
+        onSetActivityContext(context as ComponentActivity)
         onAutomaticSignInInitiated()
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            onClearActivityContext()
+        }
     }
 
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -280,7 +292,9 @@ private fun SignUpScreenPreview() {
             onForgotPasswordEmailValueChange = {},
             onNavigateToResetPasswordEmail = {},
             onContinueWithGoogleClicked = {},
-            onAutomaticSignInInitiated = {}
+            onAutomaticSignInInitiated = {},
+            onSetActivityContext = {},
+            onClearActivityContext = {}
         )
     }
 }
