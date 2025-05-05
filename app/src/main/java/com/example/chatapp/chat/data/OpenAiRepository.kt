@@ -248,7 +248,6 @@ class OpenAiRepository(
                 }
                 .filter { it.isNotBlank() }
                 .take(10)
-            Log.d(TAG, "Trending searches fetched and cached: $formattedContent")
 
             dao.clearTrendingSearches()
             dao.insertTrendingSearches(formattedContent.toTrendingSearchEntity())
